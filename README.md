@@ -1,6 +1,6 @@
 Riffer!
 
-A framework designed for reading and writing large files in the RIFF format.
+A framework for reading and writing large files in the RIFF format.
 
 The assumption is that there are many top-level chunks in the RIFF format. We can think of these as being like frames in a video.
 Each of these will have several sub-chunks, also RIFF format. Nesting beyond this is not supported out of the box.
