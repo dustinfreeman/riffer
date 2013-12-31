@@ -1,0 +1,5 @@
+colour frame = CLUR
+width = WDTH
+height = HGHT
+timestamp = MTMP
+image = CLRI
