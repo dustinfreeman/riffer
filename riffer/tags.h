@@ -1,5 +1,6 @@
 #include <map>
 #include <string>
+#include <iostream>
 
 namespace rfr {
 
@@ -7,19 +8,19 @@ namespace rfr {
 		//should not access _tags directly.
 		std::map<std::string, std::string> _tags;
 
-		void register(std::string _name, std::string _tag) {
+		void register_tag(std::string _name, std::string _tag) {
 			bool already_registered = false;
 			//check if name already registered
-			if (_tags.find(_name) == _tags.end) {
+			if (_tags.find(_name) == _tags.end()) {
 				std::cout << "tag name already registered: " << _name << "\n";
 				already_registered = true;
 			}
 			//check if tag already registered
 			std::map<std::string,std::string>::iterator it;
-			for (it = _tags.begin(); it != _tags.end; it++) {
+			for (it = _tags.begin(); it != _tags.end(); it++) {
 				//apparently it->second is how to access the key.
 				if (it->second == _tag) {
-					std::cout << "tag key already registered: " << _key << "\n";
+					std::cout << "tag name already registered: " << _name << "\n";
 					already_registered = true;
 				}	
 			}
@@ -42,7 +43,7 @@ namespace rfr {
 		//this function will be called often. Cannot have high performance cost.
 		std::string get_tag(std::string _name) {
 			//WARNING: no error checking.
-			return *(_tags.find(_name));
+			return _tags.find(_name)->second;
 		}
 		//We have decided to do the above at run-time, 
 		//as opposed to (likely faster) compile-time with tag key constants
