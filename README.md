@@ -1,4 +1,4 @@
-Riffer is a framework for reading and writing large files in the RIFF format.
+Riffer is a framework for quickly reading and writing large files in the RIFF format, including simultaneous read/write access.
 
 Code is currently HIGHLY UNSTABLE. Repo is public so that I can get feedback during development. This notice will change once the code stabilizes.
 
