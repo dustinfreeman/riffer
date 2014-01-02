@@ -1,6 +1,6 @@
-Riffer!
+Riffer is a framework for reading and writing large files in the RIFF format.
 
-A framework for reading and writing large files in the RIFF format.
+Code is currently HIGHLY UNSTABLE. Repo is public so that I can get feedback during development. This notice will change once the code stabilizes.
 
 The assumption is that there are many top-level chunks in the RIFF format. We can think of these as being like frames in a video.
 Each of these will have several sub-chunks, also RIFF format. Nesting beyond this is not supported out of the box.
