@@ -1,93 +1,72 @@
 #include <list>
+#include <map>
 
 #include "param.h"
+
+//http://stackoverflow.com/a/8473603/2518451
+template <typename Map>
+bool map_compare (Map const &lhs, Map const &rhs) {
+    // No predicate needed because there is operator == for pairs already.
+    return lhs.size() == rhs.size()
+        && std::equal(lhs.begin(), lhs.end(),
+                      rhs.begin());
+}
 
 namespace rfr {
 	struct Chunk {
 		std::string tag; //the top-level tag
-
-		std::list<AbstractParam> params; //list of parameters
-		//QUESTION: can we have a list of objects with different templates types?
+		std::map<std::string, std::shared_ptr<AbstractParam>> params; //list of parameters
 
 		Chunk(std::string _tag = "NULL") {
 			tag = _tag;
 		}
-		//"NULL" tag means an undefined chunk.
 
-		/*template <class T>
-		compare<T>(T value1, T value2) {
-			return value1 == value2;
-		}
-		compare<char*>(char* value1, char* value2) {
-			return byte_compare(value1, value2);
-		}*/
-		//does this template-fu work?
-
-		bool operator== (const Chunk &other) {
-			//compares tag and each parameter
-			if (tag != other.tag)
-				return false;
-
-			//Awkward O(n^2) compare
-			for (std::list<AbstractParam>::iterator it=params.begin(); it != params.end(); it++) {
-				int type_id = it->get_type_id();
-				for (std::list<AbstractParam>::iterator it_other=params.begin(); it_other != params.end(); it_other++) {
-					int other_type_id = it_other->get_type_id();
-					if ((*it).name == (*it_other).name) {
-						if (type_id != other_type_id)
-							return false;
-						switch(type_id) {
-						case INT_TYPE:
-							if ((*it).get_value<int>() != (*it_other).get_value<int>())
-								return false;
-						case LONG_TYPE:
-							if ((*it).get_value<long>() != (*it_other).get_value<long>())
-								return false;
-						}
-						
-
-						//TODO call byte_compare for char* type parameter
-
-						//compare<T>((*it).value, (*it_other).value);
-
-					}
-				}
-			}
-
-			return true; //nothing wrong!
-		}
-		
 		template <class T>
-		bool add_parameter(Param<T> new_param) {
+		bool add_parameter(std::string param_name, T value) {
 			//adds a given parameter to the list of parameters
 			//if it exists already, overwrites
-
 			bool already_exists = false;
-			for (std::list<AbstractParam>::iterator it=params.begin(); it != params.end(); it++) {
-				if ( (*it).name == new_param.name) {
-					already_exists = true;
-					(*it).set_value(new_param.value); 
-					//above will possibly cause an error (probably a compile error) if types do not match
-				}
-			}
 
-			if (!already_exists) {
-				params.push_back(new_param);
+			std::string param_tag = tags::get_tag(param_name);
+			std::map<std::string, std::shared_ptr<AbstractParam>>::iterator it;
+			it = params.find(param_tag);
+
+			if (it != params.end()) {
+				already_exists = true;
+				Param<T>* ptr = reinterpret_cast<Param<T>*>(it->second.get());
+				ptr->value = value;
+			} else {
+				//does not already exist
+				std::shared_ptr<Param<T>> new_param(new Param<T>(param_tag, value));
+				params[param_tag] = new_param;
 			}
 
 			return already_exists;
 		}
 
 		template <class T>
-		T get_parameter(std::string param_name) {
-			for (std::list<AbstractParam>::iterator it=params.begin(); it != params.end(); it++) {
-				if ( (*it).name == param_name) {
-					return (*it).get_value<T>();
-				}
+		T* get_parameter(std::string param_name) {
+			std::string param_tag = tags::get_tag(param_name);
+			std::map<std::string, std::shared_ptr<AbstractParam>>::iterator it;
+			it = params.find(param_tag);
+
+			if (it != params.end()) {
+				Param<T>* ptr = reinterpret_cast<Param<T>*>(it->second.get());
+				return &ptr->value;
+			} else {
+				return nullptr;
 			}
-			//if we got here, the parameter did not exist.
-			//return nullptr;
-			return 0;
+		}
+
+		bool operator== (const Chunk &other) {
+			//compares tag and each parameter
+
+			//checks top-level tag.
+			if (tag != other.tag)
+				return false;
+
+			return map_compare(params, other.params);
+			//return true; //nothing wrong!
 		}
 	};
 };

@@ -6,25 +6,16 @@ namespace rfr {
 
 	struct AbstractParam {
 		std::string name;
-		virtual ~AbstractParam();
-
+		virtual ~AbstractParam() {}
 		virtual int get_type_id()=0;
-
-		template <class T>
-		virtual void set_value(T _value)=0;
-
-		template <class T>
-		virtual T get_value()=0;
-		
 	};
 
 	template <class T>
 	struct Param : AbstractParam {
-		//std::string name;
 		T value;
 		Param(std::string _name, T _value)
-			: name(_name), value(_value)
-		{ }
+			: value(_value)
+		{	name == _name;	}
 		~Param() { }
 
 		int get_type_id();
@@ -46,13 +37,15 @@ namespace rfr {
 		return INT_TYPE;
 	}
 
-	template<>
-	int Param<long>::get_type_id() {
+	template<> //long
+	int Param<__int64>::get_type_id() {
 		return LONG_TYPE;
 	}
 
-
-	//QUESTION: should I implement the template functions as AbstractParam:: or Param:: ?
+	template<>
+	int Param<char*>::get_type_id() {
+		return CHAR_PTR_TYPE;
+	}
 
 };
 

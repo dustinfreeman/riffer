@@ -41,11 +41,11 @@ int main() {
 	rfr::Chunk chunk = rfr::Chunk("colour frame"); 
 	int width = 640; int height = 480;
 	//=================CONTINUE WORK HERE==============================================
-	chunk.add_parameter(rfr::Param<int>("width", width));
-	chunk.add_parameter(rfr::Param<int>("height", height));
+	chunk.add_parameter("width", width);
+	chunk.add_parameter("height", height);
 
 	int timestamp = 1234567891011; 
-	chunk.add_parameter(rfr::Param<long>("timestamp", 1234567891011));
+	chunk.add_parameter("timestamp", 1234567891011);
 
 	//creating random colour image
 	char* image_bytes = new char[width*height*4]; //4 bpp
@@ -56,18 +56,18 @@ int main() {
 	}
 
 	//Can we make a template with a pointer?
-	chunk.add_parameter(rfr::Param<char*>("image", image_bytes));
+	chunk.add_parameter("image", image_bytes);
 
 	cs.add(chunk);	//writes to disk
 
 	//======chunk_by_index and chunk should be identical
 	rfr::Chunk chunk_by_index = cs.get_at_index(0);
 
-	assert(width == chunk_by_index.get_parameter<int>("width"));
-	assert(height == chunk_by_index.get_parameter<int>("height"));
-	assert(timestamp == chunk_by_index.get_parameter<long>("timestamp"));
+	assert(width == *chunk_by_index.get_parameter<int>("width"));
+	assert(height == *chunk_by_index.get_parameter<int>("height"));
+	assert(timestamp == *chunk_by_index.get_parameter<long>("timestamp"));
 
-	assert(byte_compare(image_bytes, chunk_by_index.get_parameter<char*>("image"), width*height*4));
+	assert(byte_compare(image_bytes, *chunk_by_index.get_parameter<char*>("image"), width*height*4));
 
 	assert(chunk == chunk_by_index);
 	
@@ -75,13 +75,13 @@ int main() {
 	rfr::Chunk chunk_by_timestamp = cs.get_at_index("timestamp", timestamp);
 	//for the given "timestamp" component type, gets closest to given value.
 
-	assert(width == chunk_by_timestamp.get_parameter<int>("width"));
-	assert(height == chunk_by_timestamp.get_parameter<int>("height"));
-	assert(timestamp == chunk_by_timestamp.get_parameter<long>("timestamp"));
+	assert(width == *chunk_by_timestamp.get_parameter<int>("width"));
+	assert(height == *chunk_by_timestamp.get_parameter<int>("height"));
+	assert(timestamp == *chunk_by_timestamp.get_parameter<long>("timestamp"));
 	assert(0 == chunk_by_timestamp.get_parameter<long>("doesn't exist"));
 	//TODO above error returns a default value...this feels wrong.
 
-	assert(byte_compare(image_bytes, chunk_by_timestamp.get_parameter<char*>("image"), width*height*4));
+	assert(byte_compare(image_bytes, *chunk_by_timestamp.get_parameter<char*>("image"), width*height*4));
 
 	assert(chunk == chunk_by_timestamp);
 	
