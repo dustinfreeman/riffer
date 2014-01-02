@@ -1,28 +1,21 @@
 namespace rfr {
-#define INT_TYPE 0
-#define LONG_TYPE 1
-#define CHAR_TYPE 2
-#define CHAR_PTR_TYPE 3
+	#define INT_TYPE 0
+	#define LONG_TYPE 1
+	#define CHAR_TYPE 2
+	#define CHAR_PTR_TYPE 3
 
 	struct AbstractParam {
 		std::string name;
-		AbstractParam(std::string _name) 
-			: name(_name)
-		{ }
-		~AbstractParam() {}
+		virtual ~AbstractParam();
 
-		int get_type_id();
+		virtual int get_type_id()=0;
 
 		template <class T>
-		void set_value(T _value);
+		virtual void set_value(T _value)=0;
 
 		template <class T>
-		T get_value();
+		virtual T get_value()=0;
 		
-		template <class T>
-		bool cmp_value(AbstractParam other) {
-			return get_value() == other.get_value();
-		}
 	};
 
 	template <class T>
@@ -30,9 +23,11 @@ namespace rfr {
 		//std::string name;
 		T value;
 		Param(std::string _name, T _value)
-			: AbstractParam(_name), value(_value)
+			: name(_name), value(_value)
 		{ }
 		~Param() { }
+
+		int get_type_id();
 		
 		void set_value(T _value) {
 			value = _value;
@@ -46,12 +41,19 @@ namespace rfr {
 	//using template function specialisations
 	//http://stackoverflow.com/questions/8220045/switch-template-type
 
-	//QUESTION: should I implement the template functions as AbstractParam:: or Param:: ?
+	template<>
+	int Param<int>::get_type_id() {
+		return INT_TYPE;
+	}
 
 	template<>
-	bool AbstractParam::cmp_value<int>(AbstractParam other) {
-		return this->get_value<int>() == other.get_value<int>();
+	int Param<long>::get_type_id() {
+		return LONG_TYPE;
 	}
+
+
+	//QUESTION: should I implement the template functions as AbstractParam:: or Param:: ?
+
 };
 
 

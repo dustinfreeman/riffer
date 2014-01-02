@@ -38,10 +38,10 @@ namespace rfr {
 							return false;
 						switch(type_id) {
 						case INT_TYPE:
-							if (!(*it).cmp_value<int>(*it_other))
+							if ((*it).get_value<int>() != (*it_other).get_value<int>())
 								return false;
 						case LONG_TYPE:
-							if (!(*it).cmp_value<long>(*it_other))
+							if ((*it).get_value<long>() != (*it_other).get_value<long>())
 								return false;
 						}
 						
