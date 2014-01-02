@@ -1,4 +1,4 @@
-Riffer is a framework for reading and writing large files in the RIFF format.
+Riffer is a framework for quickly reading and writing large files in the RIFF format, including simultaneous read/write access.
 
 Code is currently HIGHLY UNSTABLE. Repo is public so that I can get feedback during development. This notice will change once the code stabilizes.
 
@@ -7,7 +7,7 @@ Each of these will have several sub-chunks, also RIFF format. Nesting beyond thi
 
 Test code is included that demonstrates really basic use.
 
-This is like the 4th time I have re-written this code from the ground up, and so I decided to make it open-source. A previous version of this code was used for an accepted CHI 2014 submission on live video editing.
+This is like the 4th time I have re-written this code from the ground up, and so I decided to make it open-source. A previous version of this code was used for an accepted CHI 2014 submission on live video editing. Previous versions have all been wrttien in C#, so some vestigial C# idioms may appear that I'm trying to weed out.
 
 
 
