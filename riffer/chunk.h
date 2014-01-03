@@ -45,8 +45,7 @@ namespace rfr {
 		}
 
 		template <class T>
-		T* get_parameter(std::string param_name) {
-			std::string param_tag = tags::get_tag(param_name);
+		T* get_parameter_by_tag(const std::string param_tag) {
 			std::map<std::string, std::shared_ptr<AbstractParam>>::iterator it;
 			it = params.find(param_tag);
 
@@ -56,6 +55,15 @@ namespace rfr {
 			} else {
 				return nullptr;
 			}
+		}
+
+		template <class T>
+		char* get_parameter_by_tag_as_char_ptr(const std::string param_tag, unsigned int* length);
+
+		template <class T>
+		T* get_parameter(const std::string param_name) {
+			std::string param_tag = tags::get_tag(param_name);
+			return get_parameter_by_tag<T>(param_tag);
 		}
 
 		bool operator== (const Chunk &other) {
@@ -69,6 +77,44 @@ namespace rfr {
 			//return true; //nothing wrong!
 		}
 	};
+
+	template <>
+	char* Chunk::get_parameter_by_tag_as_char_ptr<int>(const std::string param_tag, unsigned int* length) {
+		int* data_typed = get_parameter_by_tag<int>(param_tag);
+		if (data_typed == nullptr)
+			return nullptr;
+		*length = sizeof(int);
+		return reinterpret_cast<char*>(*data_typed);
+	}
+	
+	template <>
+	char* Chunk::get_parameter_by_tag_as_char_ptr<long>(const std::string param_tag, unsigned int* length) {
+		long* data_typed = get_parameter_by_tag<long>(param_tag);
+		if (data_typed == nullptr)
+			return nullptr;
+		*length = sizeof(long);
+		return reinterpret_cast<char*>(*data_typed);
+	}
+
+	template <>
+	char* Chunk::get_parameter_by_tag_as_char_ptr<char>(const std::string param_tag, unsigned int* length) {
+		//expecting a pointer to a char array of length 1.
+		char* data_typed = get_parameter_by_tag<char>(param_tag);
+		if (data_typed == nullptr)
+			return nullptr;
+		*length = sizeof(char);
+		return reinterpret_cast<char*>(*data_typed);
+	}
+
+	template <>
+	char* Chunk::get_parameter_by_tag_as_char_ptr<char*>(const std::string param_tag, unsigned int* length) {
+		char** data_typed = get_parameter_by_tag<char*>(param_tag);
+		if (data_typed == nullptr)
+			return nullptr;
+		//the above line may be re-writeable.
+		*length = strlen(*data_typed);
+		return *data_typed;
+	}
 };
 
 //chunk.AddParameter(rfr::Param<int>("height", height));

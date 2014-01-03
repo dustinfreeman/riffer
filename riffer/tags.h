@@ -4,6 +4,10 @@
 
 namespace rfr {
 
+#define TAG_SIZE 4
+#define RIFF_SIZE sizeof(int) //expected: 4
+//RIFF_SIZE is the number of bytes to define the chunk size.
+
 	namespace tags {
 		//should not access _tags directly.
 		std::map<std::string, std::string> _tags;

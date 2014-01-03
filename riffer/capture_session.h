@@ -8,8 +8,11 @@ namespace rfr {
 	struct FileIndexPt {
 		long position;
 		long value;
-		FileIndexPt(long _position, long _value)
-			: position(_position), value(_value) {}
+		//currently, only supporting indexing by long.
+		//int type_id;
+		FileIndexPt(long _position, long _value) //, int _type_id)
+			: position(_position), value(_value) //, type_id(_type_id) 
+		{}
 	};
 
 	struct CaptureSession {
@@ -48,14 +51,80 @@ namespace rfr {
 			//will take some time for larger files.
 			_chunk_index.clear();
 
+			//iterate through each top-level chunk, 
+			// only reading sub-chunks if they are part of the index.
+
 			//TODO run_index
+		}
+
+		void add(Chunk chunk) {
+			//go to end of capture file.
+			capture_file->seekg(0, std::ios_base::end);
+			long chunk_position = capture_file->tellg();
+
+			//write chunk to file
+			//top-level tag:
+			capture_file->write(chunk.tag.c_str(), TAG_SIZE);
+			//placeholder for eventual chunk size.
+			capture_file->write("0000", RIFF_SIZE);
+			//now, each sub-chunk
+			std::map<std::string, std::shared_ptr<AbstractParam>>::iterator param_it;
+			for (param_it = chunk.params.begin(); param_it != chunk.params.end(); param_it++) {
+				long param_chunk_position = capture_file->tellg();
+
+				//write tag
+				capture_file->write(param_it->first.c_str(), TAG_SIZE);
+				//placeholder for eventual chunk size.
+				capture_file->write("0000", RIFF_SIZE);
+
+				//write parameter data
+				char* data;	unsigned int data_length = 0;
+				switch (param_it->second->get_type_id()) {
+					case INT_TYPE:
+						data = chunk.get_parameter_by_tag_as_char_ptr<int>(param_it->first, &data_length);
+						break;
+					case LONG_TYPE:
+						data = chunk.get_parameter_by_tag_as_char_ptr<long>(param_it->first, &data_length);
+						break;
+					case CHAR_TYPE:
+						data = chunk.get_parameter_by_tag_as_char_ptr<char>(param_it->first, &data_length);
+						break;
+					case CHAR_PTR_TYPE:
+						data = chunk.get_parameter_by_tag_as_char_ptr<char*>(param_it->first, &data_length);
+						break;
+				}
+				capture_file->write(data, data_length);
+
+				//write chunk size.
+				long param_chunk_end_position = capture_file->tellg();
+				capture_file->seekg(param_chunk_position + TAG_SIZE, std::ios_base::beg);
+				capture_file->write(reinterpret_cast<char*>(param_chunk_end_position - (param_chunk_position + TAG_SIZE + RIFF_SIZE)), RIFF_SIZE);
+				//go to end of chunk again.
+				capture_file->seekg(param_chunk_end_position, std::ios_base::beg);
+			}
+			//write chunk size.
+			long chunk_end_position = capture_file->tellg();
+			capture_file->seekg(chunk_position + TAG_SIZE, std::ios_base::beg);
+			capture_file->write(reinterpret_cast<char*>(chunk_end_position - (chunk_position + TAG_SIZE + RIFF_SIZE)), RIFF_SIZE);
+			//go to end again.
+			capture_file->seekg(0, std::ios_base::end);
+
+			//index by indexing parameters.
+			_chunk_index.push_back(chunk_position);
+			std::map<std::string, std::vector<FileIndexPt>>::iterator it;
+			for (it = _param_index.begin(); it != _param_index.end(); ++it) {
+				const std::string indexing_tag = it->first;
+				long* index_value = chunk.get_parameter_by_tag<long>(indexing_tag);
+				if (index_value != nullptr) {
+					_param_index[indexing_tag].push_back(FileIndexPt(chunk_position, *index_value));
+				}
+			}
 		}
 
 		Chunk _read_chunk_at_file_index(long file_index) {
 			//should we be locking the file from other accesses here?
-
 			capture_file->seekg(file_index);
-
+			
 			//TODO _read_chunk_at_file_index
 
 			return Chunk();
@@ -91,13 +160,6 @@ namespace rfr {
 			//expect imin == imax
 			long file_index = param_file_index[imid].position; 
 			return _read_chunk_at_file_index(file_index);
-		}
-
-		void add(Chunk chunk) {
-			//TODO add to capture_file
-
-			//TODO add to index if chunk contains an indexing parameter.
-
 		}
 
 		void close() {
