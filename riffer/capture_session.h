@@ -15,6 +15,15 @@ namespace rfr {
 		{}
 	};
 
+	const int BUFFER_SIZE = 1024;
+	union data_buffer 
+	{
+		char	ch_ptr[BUFFER_SIZE];
+		int		i;
+		long	l;
+		float	f;
+	};
+
 	struct CaptureSession {
 		std::fstream * capture_file;
 		std::string filename;
@@ -36,6 +45,7 @@ namespace rfr {
 		std::vector<long> _chunk_index;
 		//the string key in the map below is the 4-char tag itself, not the tag name.
 		std::map<std::string, std::vector<FileIndexPt>> _param_index;
+		std::map<std::string, std::vector<FileIndexPt>>::iterator _param_index_it;
 		void index_by(std::string tag_name) {
 			//informs CaptureSession to index by the given tag.
 			std::string tag = tags::get_tag(tag_name);
@@ -49,12 +59,66 @@ namespace rfr {
 		void run_index() {
 			//clears and re-does any indexing by tags it is supposed to index.
 			//will take some time for larger files.
+
+			//clear current index
 			_chunk_index.clear();
+			for (_param_index_it = _param_index.begin(); 
+				_param_index_it != _param_index.end();
+				_param_index_it++) {
+				_param_index_it->second.clear();
+			}
+
+			capture_file->seekg(0, std::ios_base::beg);
+			data_buffer buffer;
 
 			//iterate through each top-level chunk, 
 			// only reading sub-chunks if they are part of the index.
+			while(!capture_file->eof()) {
+				//get chunk start
+				long chunk_position = capture_file->tellg(); 
+				_chunk_index.push_back(chunk_position);
 
-			//TODO run_index
+				//chunk tag
+				capture_file->read(buffer.ch_ptr, TAG_SIZE);
+				std::string tag = std::string(buffer.ch_ptr, TAG_SIZE);
+				//chunk length
+				capture_file->read(buffer.ch_ptr, RIFF_SIZE);
+				int chunk_length = buffer.i;
+
+				//look at each sub-chunk
+				if (_param_index.size() == 0)
+					continue; //no indexing of sub-params.
+				while ((long)capture_file->tellg() - chunk_position < chunk_length + TAG_SIZE + RIFF_SIZE) {
+					long sub_chunk_position = capture_file->tellg();
+					
+					//sub-chunk tag
+					capture_file->read(buffer.ch_ptr, TAG_SIZE);
+					std::string sub_tag = std::string(buffer.ch_ptr, TAG_SIZE);
+					//sub-chunk length
+					capture_file->read(buffer.ch_ptr, RIFF_SIZE);
+					int sub_chunk_length = buffer.i;
+
+					//are we indexing by this tag?
+					_param_index_it = _param_index.find(sub_tag);
+					if (_param_index_it != _param_index.end()) {
+						//get value - only INT and LONG supported.
+						long value;
+						switch(tags::get_type_id_from_tag(sub_tag)) {
+							case INT_TYPE:
+								capture_file->read(buffer.ch_ptr, sizeof(int));
+								value = buffer.i;
+								break;
+							case LONG_TYPE:
+								capture_file->read(buffer.ch_ptr, sizeof(long));
+								value = buffer.l;
+								break;
+						}
+						_param_index[sub_tag].push_back(FileIndexPt(chunk_position, value));
+					}
+					//advance to end of sub-chunk.
+					capture_file->seekg(sub_chunk_position + TAG_SIZE + RIFF_SIZE + sub_chunk_length, std::ios_base::beg);
+				}
+			}
 		}
 
 		void add(Chunk chunk) {
@@ -123,14 +187,7 @@ namespace rfr {
 			capture_file->seekg(file_index);
 			Chunk chunk = Chunk();
 
-			const int BUFFER_SIZE = 1024;
-			union data_buffer 
-			{
-				char	ch_ptr[BUFFER_SIZE];
-				int		i;
-				long	l;
-				float	f;
-			} buffer;
+			data_buffer buffer;
 			//char* buffer = new char; //2^16 bytes -- overkill?
 
 			//chunk tag
