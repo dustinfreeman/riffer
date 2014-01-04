@@ -1,8 +1,5 @@
 namespace rfr {
-	#define INT_TYPE 0
-	#define LONG_TYPE 1
-	#define CHAR_TYPE 2
-	#define CHAR_PTR_TYPE 3
+
 
 	struct AbstractParam {
 		std::string name;
@@ -39,6 +36,10 @@ namespace rfr {
 
 	template<> //long
 	int Param<__int64>::get_type_id() {
+		return LONG_TYPE;
+	}
+	template<> 
+	int Param<long>::get_type_id() {
 		return LONG_TYPE;
 	}
 

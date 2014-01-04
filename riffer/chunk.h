@@ -17,17 +17,16 @@ namespace rfr {
 		std::string tag; //the top-level tag
 		std::map<std::string, std::shared_ptr<AbstractParam>> params; //list of parameters
 
-		Chunk(std::string _tag = "NULL") {
+		Chunk(std::string _tag = NULL_TAG) {
 			tag = _tag;
 		}
 
 		template <class T>
-		bool add_parameter(std::string param_name, T value) {
+		bool add_parameter_by_tag(std::string param_tag, T value) {
 			//adds a given parameter to the list of parameters
 			//if it exists already, overwrites
 			bool already_exists = false;
-
-			std::string param_tag = tags::get_tag(param_name);
+			
 			std::map<std::string, std::shared_ptr<AbstractParam>>::iterator it;
 			it = params.find(param_tag);
 
@@ -42,6 +41,12 @@ namespace rfr {
 			}
 
 			return already_exists;
+		}
+
+		template <class T>
+		bool add_parameter(std::string param_name, T value) {
+			std::string param_tag = tags::get_tag(param_name);
+			return add_parameter_by_tag<T>(param_tag, value);
 		}
 
 		template <class T>
@@ -93,16 +98,6 @@ namespace rfr {
 		if (data_typed == nullptr)
 			return nullptr;
 		*length = sizeof(long);
-		return reinterpret_cast<char*>(*data_typed);
-	}
-
-	template <>
-	char* Chunk::get_parameter_by_tag_as_char_ptr<char>(const std::string param_tag, unsigned int* length) {
-		//expecting a pointer to a char array of length 1.
-		char* data_typed = get_parameter_by_tag<char>(param_tag);
-		if (data_typed == nullptr)
-			return nullptr;
-		*length = sizeof(char);
 		return reinterpret_cast<char*>(*data_typed);
 	}
 

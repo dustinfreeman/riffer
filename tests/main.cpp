@@ -18,11 +18,11 @@ bool byte_compare(char* array1, char* array2, int length) {
 void RegisterTags() {
 	//for now, tags do not have a built-in type definition.
 	//the point of the Tags structure is human readability.
-	rfr::tags::register_tag("colour frame", "CLUR");
-	rfr::tags::register_tag("width", "WDTH");
-	rfr::tags::register_tag("height", "HGHT");
-	rfr::tags::register_tag("timestamp", "MTMP");
-	rfr::tags::register_tag("image", "CLRI");
+	rfr::tags::register_tag("colour frame", "CLUR", CHAR_PTR_TYPE);
+	rfr::tags::register_tag("width", "WDTH", INT_TYPE);
+	rfr::tags::register_tag("height", "HGHT", INT_TYPE);
+	rfr::tags::register_tag("timestamp", "MTMP", LONG_TYPE);
+	rfr::tags::register_tag("image", "CLRI", INT_TYPE);
 }
 
 //===================================================
@@ -47,7 +47,7 @@ int main() {
 	int timestamp = 1234567891011; 
 	chunk.add_parameter("timestamp", 1234567891011);
 
-	//creating random colour image
+	//creating colour image
 	char* image_bytes = new char[width*height*4]; //4 bpp
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {

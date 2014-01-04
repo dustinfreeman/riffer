@@ -86,9 +86,6 @@ namespace rfr {
 					case LONG_TYPE:
 						data = chunk.get_parameter_by_tag_as_char_ptr<long>(param_it->first, &data_length);
 						break;
-					case CHAR_TYPE:
-						data = chunk.get_parameter_by_tag_as_char_ptr<char>(param_it->first, &data_length);
-						break;
 					case CHAR_PTR_TYPE:
 						data = chunk.get_parameter_by_tag_as_char_ptr<char*>(param_it->first, &data_length);
 						break;
@@ -124,10 +121,62 @@ namespace rfr {
 		Chunk _read_chunk_at_file_index(long file_index) {
 			//should we be locking the file from other accesses here?
 			capture_file->seekg(file_index);
-			
-			//TODO _read_chunk_at_file_index
+			Chunk chunk = Chunk();
 
-			return Chunk();
+			const int BUFFER_SIZE = 1024;
+			union data_buffer 
+			{
+				char	ch_ptr[BUFFER_SIZE];
+				int		i;
+				long	l;
+				float	f;
+			} buffer;
+			//char* buffer = new char; //2^16 bytes -- overkill?
+
+			//chunk tag
+			capture_file->read(buffer.ch_ptr, TAG_SIZE);
+			chunk.tag = std::string(buffer.ch_ptr, TAG_SIZE);
+			//chunk length
+			capture_file->read(buffer.ch_ptr, RIFF_SIZE);
+			int chunk_length = buffer.i;
+
+			//read sub-chunks while still inside the chunk.
+			while ((long)capture_file->tellg() - file_index < chunk_length + TAG_SIZE + RIFF_SIZE) {
+				//sub-chunk tag
+				capture_file->read(buffer.ch_ptr, TAG_SIZE);
+				std::string sub_tag = std::string(buffer.ch_ptr, TAG_SIZE);
+				//sub-chunk length
+				capture_file->read(buffer.ch_ptr, RIFF_SIZE);
+				int sub_chunk_length = buffer.i;
+				//sub-chunk data
+				switch(tags::get_type_id_from_tag(sub_tag)) {
+					case INT_TYPE:
+						if (sub_chunk_length != sizeof(int))
+							std::cout << "sub_chunk_length for int unexpected size" << sub_chunk_length << "\n";
+						capture_file->read(buffer.ch_ptr, sizeof(int));
+						chunk.add_parameter_by_tag<int>(sub_tag, buffer.i);
+						break;
+					case LONG_TYPE:
+						if (sub_chunk_length != sizeof(long))
+							std::cout << "sub_chunk_length for long unexpected size" << sub_chunk_length << "\n";
+						capture_file->read(buffer.ch_ptr, sizeof(long));
+						chunk.add_parameter_by_tag<long>(sub_tag, buffer.i);
+						break;
+					case CHAR_PTR_TYPE: 
+						{
+							char* buffer_ptr = new char[sub_chunk_length];
+							capture_file->read(buffer_ptr, sub_chunk_length);
+							chunk.add_parameter_by_tag<char*>(sub_tag, buffer_ptr);
+						}
+						break;
+					case UNDEFN_TYPE:
+						std::cout << "Found tag of undefined type: " << sub_tag << "\n";
+						break;
+				}
+			}
+			//capture_file is now at end of chunk.
+			
+			return chunk;
 		}
 
 		Chunk get_at_index(int index) {
