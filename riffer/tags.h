@@ -26,13 +26,13 @@ namespace rfr {
 			{}
 		};
 
-		//should not access _tags directly.
+		//should not access _tags directly externally.
 		std::map<std::string, tag_defn> _tags;
 
 		void register_tag(std::string _name, std::string _tag, int _type_id) {
 			bool already_registered = false;
 			//check if name already registered
-			if (_tags.find(_name) == _tags.end()) {
+			if (_tags.find(_name) != _tags.end()) {
 				std::cout << "tag name already registered: " << _name << "\n";
 				already_registered = true;
 			}
