@@ -38,6 +38,9 @@ namespace rfr {
 				//lol syntax
 
 			capture_file = new std::fstream(filename, mode);
+			if (!capture_file->is_open()) {
+				std::cout << "Could not open capture file.\n";
+			}
 			//capture_file->open(filename, mode);
 		}
 
@@ -124,7 +127,7 @@ namespace rfr {
 		void add(Chunk chunk) {
 			//go to end of capture file.
 			capture_file->seekg(0, std::ios_base::end);
-			long chunk_position = capture_file->tellg();
+			long chunk_position = capture_file->tellp();
 
 			//write chunk to file
 			//top-level tag:
