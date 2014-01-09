@@ -18,11 +18,11 @@ bool byte_compare(char* array1, char* array2, int length) {
 void RegisterTags() {
 	//for now, tags do not have a built-in type definition.
 	//the point of the Tags structure is human readability.
-	rfr::tags::register_tag("colour frame", "CLUR", CHAR_PTR_TYPE);
+	rfr::tags::register_tag("colour frame", "CLUR", CHUNK_TYPE);
 	rfr::tags::register_tag("width", "WDTH", INT_TYPE);
 	rfr::tags::register_tag("height", "HGHT", INT_TYPE);
 	rfr::tags::register_tag("timestamp", "MTMP", LONG_TYPE);
-	rfr::tags::register_tag("image", "CLRI", INT_TYPE);
+	rfr::tags::register_tag("image", "CLRI", CHAR_PTR_TYPE);
 }
 
 //===================================================

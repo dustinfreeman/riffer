@@ -210,6 +210,7 @@ namespace rfr {
 
 			//read sub-chunks while still inside the chunk.
 			while ((long)capture_file->tellg() - file_index < chunk_length + TAG_SIZE + RIFF_SIZE) {
+				long sub_chunk_start = capture_file->tellg();
 				//sub-chunk tag
 				capture_file->read(buffer.ch_ptr, TAG_SIZE);
 				std::string sub_tag = std::string(buffer.ch_ptr, TAG_SIZE);
@@ -241,6 +242,8 @@ namespace rfr {
 						std::cout << "Found tag of undefined type: " << sub_tag << "\n";
 						break;
 				}
+				//for sanity, move file to start of next expected sub-chunk:
+				capture_file->seekg(sub_chunk_start + TAG_SIZE + RIFF_SIZE + sub_chunk_length, std::ios_base::beg);
 			}
 			//capture_file is now at end of chunk.
 			
