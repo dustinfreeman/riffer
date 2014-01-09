@@ -216,3 +216,13 @@ pip-log.txt
 #Mr Developer
 .mr.developer.cfg
 /tests/*.dat
+
+*.xcuserstate
+
+*.xcworkspacedata
+
+*.xccheckout
+
+*.xcbkptlist
+
+*.xcscheme
