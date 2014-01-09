@@ -26,14 +26,19 @@ void RegisterTags() {
 }
 
 //===================================================
-
 int main() {
 	//tag definitions from our local project.
 	RegisterTags(); 
 	//expected behaviour: will get 5 "tag already registered" warnings.
 	rfr::tags::register_from_file("tag_definitions.txt");
 	
-	rfr::CaptureSession cs = rfr::CaptureSession("./capture.dat");
+	rfr::CaptureSession cs("./capture.dat");
+	if (!cs.capture_file->is_open()) {
+		std::cout << "CaptureSession file not open.\n";
+	} else {
+		std::cout << "CaptureSession file IS open.\n";
+	}
+	
 	//informs the CaptureSession to index by the "timestamp" tag.
 	cs.index_by("timestamp"); 
 
@@ -44,7 +49,7 @@ int main() {
 	chunk.add_parameter("width", width);
 	chunk.add_parameter("height", height);
 
-	int timestamp = 1234567891011; 
+	long timestamp = 1234567891011; 
 	chunk.add_parameter("timestamp", 1234567891011);
 
 	//creating colour image
@@ -78,8 +83,7 @@ int main() {
 	assert(width == *chunk_by_timestamp.get_parameter<int>("width"));
 	assert(height == *chunk_by_timestamp.get_parameter<int>("height"));
 	assert(timestamp == *chunk_by_timestamp.get_parameter<long>("timestamp"));
-	assert(0 == chunk_by_timestamp.get_parameter<long>("doesn't exist"));
-	//TODO above error returns a default value...this feels wrong.
+	assert(nullptr == chunk_by_timestamp.get_parameter<long>("doesn't exist"));
 
 	assert(byte_compare(image_bytes, *chunk_by_timestamp.get_parameter<char*>("image"), width*height*4));
 
@@ -93,6 +97,8 @@ int main() {
 	cs_opened.run_index();
 	rfr::Chunk opened_chunk_by_timestamp = cs.get_at_index("timestamp", timestamp);
 	assert(chunk == opened_chunk_by_timestamp);
+
+	//=======Index Searching
 }
 
 

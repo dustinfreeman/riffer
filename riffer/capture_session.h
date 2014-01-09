@@ -25,23 +25,24 @@ namespace rfr {
 	};
 
 	struct CaptureSession {
-		std::fstream * capture_file;
+		std::fstream* capture_file;
 		std::string filename;
-		CaptureSession(std::string _filename = "capture.dat", bool overwrite = true) {
+		CaptureSession(std::string _filename = "./capture.dat", bool overwrite = true) {
 			filename = _filename;
 			
 			std::ios_base::openmode mode = std::fstream::binary | std::fstream::in | std::fstream::out;
+			//mode |= std::fstream::ate; //create
 			if (overwrite)
 				mode |= std::fstream::trunc; //dicard file contents
 			else
 				mode |= std::fstream::app | std::fstream::ate;
 				//lol syntax
 
+			//capture_file->open(filename, mode);
 			capture_file = new std::fstream(filename, mode);
 			if (!capture_file->is_open()) {
 				std::cout << "Could not open capture file.\n";
 			}
-			//capture_file->open(filename, mode);
 		}
 
 		//holds chunk positions in capture_file
@@ -126,8 +127,13 @@ namespace rfr {
 
 		void add(Chunk chunk) {
 			//go to end of capture file.
+			if (!capture_file->is_open()) {
+				std::cout << "Capture file not open.\n";
+			}
 			capture_file->seekg(0, std::ios_base::end);
-			long chunk_position = capture_file->tellp();
+			long chunk_position; 
+			chunk_position = capture_file->tellp();
+			std::cout << "adding: chunk_position tell p " << chunk_position << "\n";
 
 			//write chunk to file
 			//top-level tag:
@@ -162,7 +168,8 @@ namespace rfr {
 				//write chunk size.
 				long param_chunk_end_position = capture_file->tellg();
 				capture_file->seekg(param_chunk_position + TAG_SIZE, std::ios_base::beg);
-				capture_file->write(reinterpret_cast<char*>(param_chunk_end_position - (param_chunk_position + TAG_SIZE + RIFF_SIZE)), RIFF_SIZE);
+				int chunk_size = param_chunk_end_position - (param_chunk_position + TAG_SIZE + RIFF_SIZE);
+				capture_file->write(reinterpret_cast<char*>(chunk_size), RIFF_SIZE);
 				//go to end of chunk again.
 				capture_file->seekg(param_chunk_end_position, std::ios_base::beg);
 			}
@@ -272,6 +279,7 @@ namespace rfr {
 		}
 
 		void close() {
+			std::cout << "closing file." << (void*)capture_file << "\n";
 			capture_file->close();
 		}
 
