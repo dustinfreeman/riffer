@@ -257,12 +257,12 @@ namespace rfr {
 		}
 
 		template <class T>
-		Chunk get_at_index(std::string indexing_param, T indexing_value) {
+		Chunk get_at_index_tag(std::string indexing_param_tag, T indexing_value) {
 			//check parameter index exists.
 			std::map<std::string, std::vector<FileIndexPt>>::iterator it;
-			it = _param_index.find(indexing_param);
+			it = _param_index.find(indexing_param_tag);
 			if (it == _param_index.end()) {
-				std::cout << "We did not index by " << indexing_param << "\n";
+				std::cout << "We did not index by " << indexing_param_tag << "\n";
 				return Chunk();
 			}
 
@@ -271,7 +271,7 @@ namespace rfr {
 			int imax = param_file_index.size();
 			int imin = 0;
 			int imid = -1;
-			while (imax - imin > 1)
+			while (imax - imin >= 1)
             {
 				imid = (imax - imin) / 2 + imin;
 				if (param_file_index[imid].value < indexing_value)
@@ -282,6 +282,11 @@ namespace rfr {
 			//expect imin == imax
 			int64_t file_index = param_file_index[imid].position; 
 			return _read_chunk_at_file_index(file_index);
+		}
+
+		template <class T>
+		Chunk get_at_index(std::string indexing_param, T indexing_value) {
+			return get_at_index_tag(tags::get_tag(indexing_param), indexing_value);
 		}
 
 		void close() {
