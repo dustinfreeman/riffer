@@ -52,16 +52,20 @@ int main() {
 	int64_t timestamp = 1234567891011; 
 	chunk.add_parameter("timestamp", 1234567891011);
 
-	//creating colour image
+	//creating colour image - assume 4 bpp
 	char* image_bytes = new char[width*height*4]; //4 bpp
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
-			char intensity = 255*(x + y)/(width + height); 
+			char intensity = 255*((width-x) + y)/(width + height);
+            image_bytes[4*(x + y*height) + 0] = intensity;
+            image_bytes[4*(x + y*height) + 1] = intensity;
+            image_bytes[4*(x + y*height) + 2] = intensity;
+            image_bytes[4*(x + y*height) + 3] = 255;
 		} 	
 	}
 
 	//Can we make a template with a pointer?
-	chunk.add_parameter("image", image_bytes);
+	chunk.add_parameter("image", image_bytes, width*height*4);
 
 	cs.add(chunk);	//writes to disk
 

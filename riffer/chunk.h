@@ -36,6 +36,7 @@ namespace rfr {
 				ptr->value = value;
 			} else {
 				//does not already exist
+                //std::cout << "value adding: " << value << "\n";
 				std::shared_ptr<Param<T>> new_param(new Param<T>(param_tag, value));
 				params[param_tag] = new_param;
 			}
