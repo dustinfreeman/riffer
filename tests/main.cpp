@@ -68,11 +68,11 @@ int main() {
 	//======chunk_by_index and chunk should be identical
 	rfr::Chunk chunk_by_index = cs.get_at_index(0);
 
-	assert(width == *chunk_by_index.get_parameter<int>("width"));
-	assert(height == *chunk_by_index.get_parameter<int>("height"));
-	assert(timestamp == *chunk_by_index.get_parameter<long>("timestamp"));
+	assert(width == *(chunk_by_index.get_parameter<int>("width")));
+	assert(height == *(chunk_by_index.get_parameter<int>("height")));
+	assert(timestamp == *(chunk_by_index.get_parameter<long>("timestamp")));
 
-	assert(byte_compare(image_bytes, *chunk_by_index.get_parameter<char*>("image"), width*height*4));
+	assert(byte_compare(image_bytes, *(chunk_by_index.get_parameter<char*>("image")), width*height*4));
 
 	assert(chunk == chunk_by_index);
 	
@@ -80,12 +80,12 @@ int main() {
 	rfr::Chunk chunk_by_timestamp = cs.get_at_index("timestamp", timestamp);
 	//for the given "timestamp" component type, gets closest to given value.
 
-	assert(width == *chunk_by_timestamp.get_parameter<int>("width"));
-	assert(height == *chunk_by_timestamp.get_parameter<int>("height"));
-	assert(timestamp == *chunk_by_timestamp.get_parameter<long>("timestamp"));
+	assert(width == *(chunk_by_timestamp.get_parameter<int>("width")));
+	assert(height == *(chunk_by_timestamp.get_parameter<int>("height")));
+	assert(timestamp == *(chunk_by_timestamp.get_parameter<long>("timestamp")));
 	assert(nullptr == chunk_by_timestamp.get_parameter<long>("doesn't exist"));
 
-	assert(byte_compare(image_bytes, *chunk_by_timestamp.get_parameter<char*>("image"), width*height*4));
+	assert(byte_compare(image_bytes, *(chunk_by_timestamp.get_parameter<char*>("image")), width*height*4));
 
 	assert(chunk == chunk_by_timestamp);
 	

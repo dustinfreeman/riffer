@@ -89,7 +89,7 @@ namespace rfr {
 		if (data_typed == nullptr)
 			return nullptr;
 		*length = sizeof(int);
-		return reinterpret_cast<char*>(*data_typed);
+		return reinterpret_cast<char*>(data_typed);
 	}
 	
 	template <>
@@ -98,7 +98,7 @@ namespace rfr {
 		if (data_typed == nullptr)
 			return nullptr;
 		*length = sizeof(long);
-		return reinterpret_cast<char*>(*data_typed);
+		return reinterpret_cast<char*>(data_typed);
 	}
 
 	template <>

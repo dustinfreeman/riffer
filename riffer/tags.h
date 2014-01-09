@@ -28,6 +28,7 @@ namespace rfr {
 
 		//should not access _tags directly externally.
 		std::map<std::string, tag_defn> _tags;
+		std::map<std::string, tag_defn>::iterator _tags_it;
 
 		void register_tag(std::string _name, std::string _tag, int _type_id) {
 			bool already_registered = false;
@@ -63,7 +64,12 @@ namespace rfr {
 
 		//this function will be called often. Cannot have high performance cost.
 		std::string get_tag(std::string _name) {
-			//WARNING: no error checking.
+			/*if (_name == NULL_TAG)
+				return NULL_TAG;*/
+			_tags_it = _tags.find(_name);
+			if (_tags_it == _tags.end())
+				return NULL_TAG;
+			
 			return _tags.find(_name)->second.tag;
 		}
 		//We have decided to do the above at run-time, 
