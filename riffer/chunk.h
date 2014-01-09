@@ -17,8 +17,8 @@ namespace rfr {
 		std::string tag; //the top-level tag
 		std::map<std::string, std::shared_ptr<AbstractParam>> params; //list of parameters
 
-		Chunk(std::string _tag = NULL_TAG) {
-			tag = _tag;
+		Chunk(std::string _tag_name = NULL_TAG) {
+			tag = tags::get_tag(_tag_name);
 		}
 
 		template <class T>
@@ -63,7 +63,7 @@ namespace rfr {
 		}
 
 		template <class T>
-		char* get_parameter_by_tag_as_char_ptr(const std::string param_tag, unsigned int* length);
+		const char* get_parameter_by_tag_as_char_ptr(const std::string param_tag, unsigned int* length);
 
 		template <class T>
 		T* get_parameter(const std::string param_name) {
@@ -84,7 +84,7 @@ namespace rfr {
 	};
 
 	template <>
-	char* Chunk::get_parameter_by_tag_as_char_ptr<int>(const std::string param_tag, unsigned int* length) {
+	const char* Chunk::get_parameter_by_tag_as_char_ptr<int>(const std::string param_tag, unsigned int* length) {
 		int* data_typed = get_parameter_by_tag<int>(param_tag);
 		if (data_typed == nullptr)
 			return nullptr;
@@ -93,7 +93,7 @@ namespace rfr {
 	}
 	
 	template <>
-	char* Chunk::get_parameter_by_tag_as_char_ptr<long>(const std::string param_tag, unsigned int* length) {
+	const char* Chunk::get_parameter_by_tag_as_char_ptr<long>(const std::string param_tag, unsigned int* length) {
 		long* data_typed = get_parameter_by_tag<long>(param_tag);
 		if (data_typed == nullptr)
 			return nullptr;
@@ -102,7 +102,7 @@ namespace rfr {
 	}
 
 	template <>
-	char* Chunk::get_parameter_by_tag_as_char_ptr<char*>(const std::string param_tag, unsigned int* length) {
+	const char* Chunk::get_parameter_by_tag_as_char_ptr<char*>(const std::string param_tag, unsigned int* length) {
 		char** data_typed = get_parameter_by_tag<char*>(param_tag);
 		if (data_typed == nullptr)
 			return nullptr;

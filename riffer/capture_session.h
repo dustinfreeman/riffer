@@ -151,7 +151,7 @@ namespace rfr {
 				capture_file->write("0000", RIFF_SIZE);
 
 				//write parameter data
-				char* data;	unsigned int data_length = 0;
+				const char* data;	unsigned int data_length = 0;
 				switch (param_it->second->get_type_id()) {
 					case INT_TYPE:
 						data = chunk.get_parameter_by_tag_as_char_ptr<int>(param_it->first, &data_length);
@@ -168,15 +168,16 @@ namespace rfr {
 				//write chunk size.
 				long param_chunk_end_position = capture_file->tellg();
 				capture_file->seekg(param_chunk_position + TAG_SIZE, std::ios_base::beg);
-				int chunk_size = param_chunk_end_position - (param_chunk_position + TAG_SIZE + RIFF_SIZE);
-				capture_file->write(reinterpret_cast<char*>(chunk_size), RIFF_SIZE);
+				int param_chunk_size = param_chunk_end_position - (param_chunk_position + TAG_SIZE + RIFF_SIZE);
+				capture_file->write(reinterpret_cast<const char*>(&param_chunk_size), RIFF_SIZE);
 				//go to end of chunk again.
 				capture_file->seekg(param_chunk_end_position, std::ios_base::beg);
 			}
 			//write chunk size.
 			long chunk_end_position = capture_file->tellg();
 			capture_file->seekg(chunk_position + TAG_SIZE, std::ios_base::beg);
-			capture_file->write(reinterpret_cast<char*>(chunk_end_position - (chunk_position + TAG_SIZE + RIFF_SIZE)), RIFF_SIZE);
+			int chunk_size = chunk_end_position - (chunk_position + TAG_SIZE + RIFF_SIZE);
+			capture_file->write(reinterpret_cast<const char*>(&chunk_size), RIFF_SIZE);
 			//go to end again.
 			capture_file->seekg(0, std::ios_base::end);
 
