@@ -35,12 +35,8 @@ namespace rfr {
 	}
 
 	template<> //long
-	int Param<__int64>::get_type_id() {
-		return LONG_TYPE;
-	}
-	template<> 
-	int Param<long>::get_type_id() {
-		return LONG_TYPE;
+	int Param<int64_t>::get_type_id() {
+		return INT_64_TYPE;
 	}
 
 	template<>

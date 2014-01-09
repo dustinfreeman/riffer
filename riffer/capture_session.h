@@ -6,11 +6,11 @@
 
 namespace rfr {
 	struct FileIndexPt {
-		long position;
-		long value;
-		//currently, only supporting indexing by long.
+		int64_t position;
+		int64_t value;
+		//currently, only supporting indexing by int64_t.
 		//int type_id;
-		FileIndexPt(long _position, long _value) //, int _type_id)
+		FileIndexPt(int64_t _position, int64_t _value) //, int _type_id)
 			: position(_position), value(_value) //, type_id(_type_id) 
 		{}
 	};
@@ -20,7 +20,7 @@ namespace rfr {
 	{
 		char	ch_ptr[BUFFER_SIZE];
 		int		i;
-		long	l;
+		int64_t	i64;
 		float	f;
 	};
 
@@ -46,7 +46,7 @@ namespace rfr {
 		}
 
 		//holds chunk positions in capture_file
-		std::vector<long> _chunk_index;
+		std::vector<int64_t> _chunk_index;
 		//the string key in the map below is the 4-char tag itself, not the tag name.
 		std::map<std::string, std::vector<FileIndexPt>> _param_index;
 		std::map<std::string, std::vector<FileIndexPt>>::iterator _param_index_it;
@@ -79,7 +79,7 @@ namespace rfr {
 			// only reading sub-chunks if they are part of the index.
 			while(!capture_file->eof()) {
 				//get chunk start
-				long chunk_position = capture_file->tellg(); 
+				int64_t chunk_position = capture_file->tellg(); 
 				_chunk_index.push_back(chunk_position);
 
 				//chunk tag
@@ -92,8 +92,8 @@ namespace rfr {
 				//look at each sub-chunk
 				if (_param_index.size() == 0)
 					continue; //no indexing of sub-params.
-				while ((long)capture_file->tellg() - chunk_position < chunk_length + TAG_SIZE + RIFF_SIZE) {
-					long sub_chunk_position = capture_file->tellg();
+				while ((int64_t)capture_file->tellg() - chunk_position < chunk_length + TAG_SIZE + RIFF_SIZE) {
+					int64_t sub_chunk_position = capture_file->tellg();
 					
 					//sub-chunk tag
 					capture_file->read(buffer.ch_ptr, TAG_SIZE);
@@ -105,16 +105,16 @@ namespace rfr {
 					//are we indexing by this tag?
 					_param_index_it = _param_index.find(sub_tag);
 					if (_param_index_it != _param_index.end()) {
-						//get value - only INT and LONG supported.
-						long value;
+						//get value - only INT and int64_t supported.
+						int64_t value;
 						switch(tags::get_type_id_from_tag(sub_tag)) {
 							case INT_TYPE:
 								capture_file->read(buffer.ch_ptr, sizeof(int));
 								value = buffer.i;
 								break;
-							case LONG_TYPE:
-								capture_file->read(buffer.ch_ptr, sizeof(long));
-								value = buffer.l;
+							case INT_64_TYPE:
+								capture_file->read(buffer.ch_ptr, sizeof(int64_t));
+								value = buffer.i64;
 								break;
 						}
 						_param_index[sub_tag].push_back(FileIndexPt(chunk_position, value));
@@ -126,12 +126,14 @@ namespace rfr {
 		}
 
 		void add(Chunk chunk) {
+			//adds and writes the chunk data to capture_file
+
 			//go to end of capture file.
 			if (!capture_file->is_open()) {
 				std::cout << "Capture file not open.\n";
 			}
 			capture_file->seekg(0, std::ios_base::end);
-			long chunk_position; 
+			int64_t chunk_position; 
 			chunk_position = capture_file->tellp();
 			std::cout << "adding: chunk_position tell p " << chunk_position << "\n";
 
@@ -143,7 +145,7 @@ namespace rfr {
 			//now, each sub-chunk
 			std::map<std::string, std::shared_ptr<AbstractParam>>::iterator param_it;
 			for (param_it = chunk.params.begin(); param_it != chunk.params.end(); param_it++) {
-				long param_chunk_position = capture_file->tellg();
+				int64_t param_chunk_position = capture_file->tellg();
 
 				//write tag
 				capture_file->write(param_it->first.c_str(), TAG_SIZE);
@@ -156,8 +158,8 @@ namespace rfr {
 					case INT_TYPE:
 						data = chunk.get_parameter_by_tag_as_char_ptr<int>(param_it->first, &data_length);
 						break;
-					case LONG_TYPE:
-						data = chunk.get_parameter_by_tag_as_char_ptr<long>(param_it->first, &data_length);
+					case INT_64_TYPE:
+						data = chunk.get_parameter_by_tag_as_char_ptr<int64_t>(param_it->first, &data_length);
 						break;
 					case CHAR_PTR_TYPE:
 						data = chunk.get_parameter_by_tag_as_char_ptr<char*>(param_it->first, &data_length);
@@ -166,7 +168,7 @@ namespace rfr {
 				capture_file->write(data, data_length);
 
 				//write chunk size.
-				long param_chunk_end_position = capture_file->tellg();
+				int64_t param_chunk_end_position = capture_file->tellg();
 				capture_file->seekg(param_chunk_position + TAG_SIZE, std::ios_base::beg);
 				int param_chunk_size = param_chunk_end_position - (param_chunk_position + TAG_SIZE + RIFF_SIZE);
 				capture_file->write(reinterpret_cast<const char*>(&param_chunk_size), RIFF_SIZE);
@@ -174,7 +176,7 @@ namespace rfr {
 				capture_file->seekg(param_chunk_end_position, std::ios_base::beg);
 			}
 			//write chunk size.
-			long chunk_end_position = capture_file->tellg();
+			int64_t chunk_end_position = capture_file->tellg();
 			capture_file->seekg(chunk_position + TAG_SIZE, std::ios_base::beg);
 			int chunk_size = chunk_end_position - (chunk_position + TAG_SIZE + RIFF_SIZE);
 			capture_file->write(reinterpret_cast<const char*>(&chunk_size), RIFF_SIZE);
@@ -186,14 +188,14 @@ namespace rfr {
 			std::map<std::string, std::vector<FileIndexPt>>::iterator it;
 			for (it = _param_index.begin(); it != _param_index.end(); ++it) {
 				const std::string indexing_tag = it->first;
-				long* index_value = chunk.get_parameter_by_tag<long>(indexing_tag);
+				int64_t* index_value = chunk.get_parameter_by_tag<int64_t>(indexing_tag);
 				if (index_value != nullptr) {
 					_param_index[indexing_tag].push_back(FileIndexPt(chunk_position, *index_value));
 				}
 			}
 		}
 
-		Chunk _read_chunk_at_file_index(long file_index) {
+		Chunk _read_chunk_at_file_index(int64_t file_index) {
 			//should we be locking the file from other accesses here?
 			capture_file->seekg(file_index);
 			Chunk chunk = Chunk();
@@ -209,8 +211,8 @@ namespace rfr {
 			int chunk_length = buffer.i;
 
 			//read sub-chunks while still inside the chunk.
-			while ((long)capture_file->tellg() - file_index < chunk_length + TAG_SIZE + RIFF_SIZE) {
-				long sub_chunk_start = capture_file->tellg();
+			while ((int64_t)capture_file->tellg() - file_index < chunk_length + TAG_SIZE + RIFF_SIZE) {
+				int64_t sub_chunk_start = capture_file->tellg();
 				//sub-chunk tag
 				capture_file->read(buffer.ch_ptr, TAG_SIZE);
 				std::string sub_tag = std::string(buffer.ch_ptr, TAG_SIZE);
@@ -225,11 +227,11 @@ namespace rfr {
 						capture_file->read(buffer.ch_ptr, sizeof(int));
 						chunk.add_parameter_by_tag<int>(sub_tag, buffer.i);
 						break;
-					case LONG_TYPE:
-						if (sub_chunk_length != sizeof(long))
-							std::cout << "sub_chunk_length for long unexpected size" << sub_chunk_length << "\n";
-						capture_file->read(buffer.ch_ptr, sizeof(long));
-						chunk.add_parameter_by_tag<long>(sub_tag, buffer.i);
+					case INT_64_TYPE:
+						if (sub_chunk_length != sizeof(int64_t))
+							std::cout << "sub_chunk_length for int64_t unexpected size" << sub_chunk_length << "\n";
+						capture_file->read(buffer.ch_ptr, sizeof(int64_t));
+						chunk.add_parameter_by_tag<int64_t>(sub_tag, buffer.i64);
 						break;
 					case CHAR_PTR_TYPE: 
 						{
@@ -278,7 +280,7 @@ namespace rfr {
 					imax = imid;
 			}
 			//expect imin == imax
-			long file_index = param_file_index[imid].position; 
+			int64_t file_index = param_file_index[imid].position; 
 			return _read_chunk_at_file_index(file_index);
 		}
 

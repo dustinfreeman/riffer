@@ -2,6 +2,7 @@
 #include <string>
 #include <string>
 #include <iostream>
+#include <stdint.h>
 
 namespace rfr {
 
@@ -12,7 +13,7 @@ namespace rfr {
 #define UNDEFN_TYPE -1
 #define CHUNK_TYPE 0
 #define INT_TYPE 1
-#define LONG_TYPE 2
+#define INT_64_TYPE 2
 #define CHAR_PTR_TYPE 3
 
 #define NULL_TAG "NULL"

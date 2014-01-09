@@ -93,11 +93,11 @@ namespace rfr {
 	}
 	
 	template <>
-	const char* Chunk::get_parameter_by_tag_as_char_ptr<long>(const std::string param_tag, unsigned int* length) {
-		long* data_typed = get_parameter_by_tag<long>(param_tag);
+	const char* Chunk::get_parameter_by_tag_as_char_ptr<int64_t>(const std::string param_tag, unsigned int* length) {
+		int64_t* data_typed = get_parameter_by_tag<int64_t>(param_tag);
 		if (data_typed == nullptr)
 			return nullptr;
-		*length = sizeof(long);
+		*length = sizeof(int64_t);
 		return reinterpret_cast<char*>(data_typed);
 	}
 

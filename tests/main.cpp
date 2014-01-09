@@ -21,7 +21,7 @@ void RegisterTags() {
 	rfr::tags::register_tag("colour frame", "CLUR", CHUNK_TYPE);
 	rfr::tags::register_tag("width", "WDTH", INT_TYPE);
 	rfr::tags::register_tag("height", "HGHT", INT_TYPE);
-	rfr::tags::register_tag("timestamp", "MTMP", LONG_TYPE);
+	rfr::tags::register_tag("timestamp", "MTMP", INT_64_TYPE);
 	rfr::tags::register_tag("image", "CLRI", CHAR_PTR_TYPE);
 }
 
@@ -49,7 +49,7 @@ int main() {
 	chunk.add_parameter("width", width);
 	chunk.add_parameter("height", height);
 
-	long timestamp = 1234567891011; 
+	int64_t timestamp = 1234567891011; 
 	chunk.add_parameter("timestamp", 1234567891011);
 
 	//creating colour image
@@ -70,7 +70,8 @@ int main() {
 
 	assert(width == *(chunk_by_index.get_parameter<int>("width")));
 	assert(height == *(chunk_by_index.get_parameter<int>("height")));
-	assert(timestamp == *(chunk_by_index.get_parameter<long>("timestamp")));
+	int64_t read_timestamp = *(chunk_by_index.get_parameter<int64_t>("timestamp"));
+	assert(timestamp == read_timestamp);
 
 	assert(byte_compare(image_bytes, *(chunk_by_index.get_parameter<char*>("image")), width*height*4));
 
@@ -82,8 +83,8 @@ int main() {
 
 	assert(width == *(chunk_by_timestamp.get_parameter<int>("width")));
 	assert(height == *(chunk_by_timestamp.get_parameter<int>("height")));
-	assert(timestamp == *(chunk_by_timestamp.get_parameter<long>("timestamp")));
-	assert(nullptr == chunk_by_timestamp.get_parameter<long>("doesn't exist"));
+	assert(timestamp == *(chunk_by_timestamp.get_parameter<int64_t>("timestamp")));
+	assert(nullptr == chunk_by_timestamp.get_parameter<int64_t>("doesn't exist"));
 
 	assert(byte_compare(image_bytes, *(chunk_by_timestamp.get_parameter<char*>("image")), width*height*4));
 
