@@ -65,7 +65,7 @@ int main() {
 	}
 
 	//Can we make a template with a pointer?
-	chunk.add_parameter("image", image_bytes, width*height*4);
+	chunk.add_parameter("image", image_bytes);//, width*height*4);
 
 	cs.add(chunk);	//writes to disk
 
