@@ -95,8 +95,9 @@ void test_write_read_frames() {
 	rfr::CaptureSession cs_opened("./capture.dat", false);
 	cs_opened.index_by("timestamp");
 	cs_opened.run_index();
-	rfr::Chunk opened_chunk_by_timestamp = cs.get_at_index("timestamp", timestamp);
-	assert(chunk == opened_chunk_by_timestamp);
+	rfr::Chunk opened_chunk_by_timestamp = cs_opened.get_at_index("timestamp", timestamp);
+	
+	//assert(chunk == opened_chunk_by_timestamp);
 }
 
 void test_fetch_frames() {

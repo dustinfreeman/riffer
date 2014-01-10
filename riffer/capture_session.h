@@ -206,7 +206,13 @@ namespace rfr {
 
 		Chunk _read_chunk_at_file_index(int64_t file_index) {
 			//should we be locking the file from other accesses here?
-			capture_file->seekg(file_index);
+			if (!capture_file->is_open()) {
+				std::cout << "Cannot read chunk as capture file is not open.\n";
+				return Chunk();
+			}
+
+			capture_file->seekg(file_index, std::ios_base::beg);
+			//std::cout << "reading chunk @ " << capture_file->tellg() << " \n";
 			Chunk chunk = Chunk();
 
 			data_buffer buffer;
@@ -277,9 +283,9 @@ namespace rfr {
 
 			std::vector<FileIndexPt> param_file_index = it->second;
 			//do a binary search within param_file_index
-			int imax = param_file_index.size();
+			int imax = param_file_index.size() - 1;
 			int imin = 0;
-			int imid = -1;
+			int imid = 0;
 			while (imax - imin >= 1)
             {
 				imid = (imax - imin) / 2 + imin;
