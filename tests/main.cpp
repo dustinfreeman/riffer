@@ -37,7 +37,7 @@ void test_write_read_frames() {
 	cs.index_by("timestamp"); 
 
 	//makes new chunk with top-level tag of "colour frame"
-	rfr::Chunk chunk = rfr::Chunk("colour frame"); 
+	rfr::Chunk chunk("colour frame"); 
 	int width = 640; int height = 480;
 	//=================CONTINUE WORK HERE==============================================
 	chunk.add_parameter("width", width);
@@ -92,7 +92,7 @@ void test_write_read_frames() {
 	//======Close and re-open
 	cs.close();
 
-	rfr::CaptureSession cs_opened = rfr::CaptureSession("./capture.dat", false);
+	rfr::CaptureSession cs_opened("./capture.dat", false);
 	cs_opened.index_by("timestamp");
 	cs_opened.run_index();
 	rfr::Chunk opened_chunk_by_timestamp = cs.get_at_index("timestamp", timestamp);

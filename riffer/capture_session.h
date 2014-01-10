@@ -63,6 +63,13 @@ namespace rfr {
 		void run_index() {
 			//clears and re-does any indexing by tags it is supposed to index.
 			//will take some time for larger files.
+			if (!capture_file->is_open()) {
+				std::cout << "Cannot index. Capture file is not open!\n";
+				return;
+			}
+
+			capture_file->seekg(0, std::ios_base::end);
+			std::streampos file_end = capture_file->tellg();
 
 			//clear current index
 			_chunk_index.clear();
@@ -80,6 +87,8 @@ namespace rfr {
 			while(!capture_file->eof()) {
 				//get chunk start
 				int64_t chunk_position = capture_file->tellg(); 
+				if(chunk_position >= file_end)
+					break; //apparently eof doesn't work well enough?
 				_chunk_index.push_back(chunk_position);
 
 				//chunk tag
