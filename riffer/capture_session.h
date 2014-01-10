@@ -290,7 +290,7 @@ namespace rfr {
 		}
 
 		void close() {
-			std::cout << "closing file." << (void*)capture_file << "\n";
+			std::cout << "closing file " << (void*)capture_file << " .\n";
 			capture_file->close();
 		}
 

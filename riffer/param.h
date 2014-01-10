@@ -49,6 +49,11 @@ namespace rfr {
 		return CHAR_PTR_TYPE;
 	}
 
+	template<>
+	int Param<const char*>::get_type_id() {
+		return CHAR_PTR_TYPE;
+	}
+
 };
 
 

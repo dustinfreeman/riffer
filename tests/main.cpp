@@ -25,13 +25,7 @@ void RegisterTags() {
 	rfr::tags::register_tag("image", "CLRI", CHAR_PTR_TYPE);
 }
 
-//===================================================
-int main() {
-	//tag definitions from our local project.
-	RegisterTags(); 
-	//expected behaviour: will get 5 "tag already registered" warnings.
-	rfr::tags::register_from_file("tag_definitions.txt");
-	
+void test_write_read_frames() {
 	rfr::CaptureSession cs("./capture.dat");
 	if (!cs.capture_file->is_open()) {
 		std::cout << "CaptureSession file not open.\n";
@@ -103,8 +97,65 @@ int main() {
 	cs_opened.run_index();
 	rfr::Chunk opened_chunk_by_timestamp = cs.get_at_index("timestamp", timestamp);
 	assert(chunk == opened_chunk_by_timestamp);
+}
 
-	//=======Index Searching
+void test_fetch_frames() {
+	//write a bunch of frames of different sizes...make sure we get the right ones back
+	
+	rfr::tags::register_tag("frame", "FRMM", CHUNK_TYPE);
+
+	rfr::tags::register_tag("number", "NUMM", CHAR_PTR_TYPE);
+	
+	std::vector<std::string> frame_tags;
+	std::vector<int64_t> timestamps;
+	frame_tags.push_back("ZERO");	timestamps.push_back(1000);
+	frame_tags.push_back("ONE");	timestamps.push_back(2500);
+	frame_tags.push_back("TWO");	timestamps.push_back(2600);
+	frame_tags.push_back("THREE");	timestamps.push_back(10000);
+	frame_tags.push_back("FOUR");	timestamps.push_back(10001);
+	frame_tags.push_back("FIVE");	timestamps.push_back(10005);
+	frame_tags.push_back("SIX");	timestamps.push_back(15000);
+	frame_tags.push_back("SEVEN");	timestamps.push_back(19000);
+	frame_tags.push_back("EIGHT");	timestamps.push_back(100000);
+	frame_tags.push_back("NINE");	timestamps.push_back(200000);
+	frame_tags.push_back("TEN");	timestamps.push_back(200004);
+
+	//create capture
+	rfr::CaptureSession cs;
+	cs.index_by("timestamp");
+	for (int i = 0; i < frame_tags.size(); i++) {
+		rfr::Chunk chunk("frame");
+		chunk.add_parameter("number", frame_tags[i].c_str());
+		chunk.add_parameter("timestamp", timestamps[i]);
+		cs.add(chunk);
+	}
+
+	//test indexing
+	for (int i = frame_tags.size() - 1; i >=0; i--) {
+		assert( *(cs.get_at_index(i).get_parameter<char*>("number")) == frame_tags[i].c_str() );
+	}
+
+	//indexing by timestamp
+	assert( *(cs.get_at_index("timestamp",2500).get_parameter<char*>("number")) == frame_tags[1].c_str() );
+	assert( *(cs.get_at_index("timestamp",10001).get_parameter<char*>("number")) == frame_tags[4].c_str() );
+	//in the middle of two value indexes - should choose the closest.
+	assert( *(cs.get_at_index("timestamp",8000).get_parameter<char*>("number")) == frame_tags[4].c_str() );
+	assert( *(cs.get_at_index("timestamp",200001).get_parameter<char*>("number")) == frame_tags[9].c_str() );
+
+}
+
+//===================================================
+int main() {
+	//tag definitions from our local project.
+	RegisterTags(); 
+	//expected behaviour: will get 5 "tag already registered" warnings.
+	rfr::tags::register_from_file("tag_definitions.txt");
+	
+	test_write_read_frames();
+
+	test_fetch_frames();
+
+	std::cout << "finished.\n";
 }
 
 
