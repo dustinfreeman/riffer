@@ -1,4 +1,5 @@
 #include <string>
+#include <algorithm>    // std::find
 #include <vector>
 #include <fstream>
 
@@ -138,6 +139,40 @@ namespace rfr {
 			}
 		}
 
+		void _add_param(Chunk chunk, std::string param_tag) {
+			//helper function for add() below.
+			//writes the param of the chunk to the file.
+			std::streamoff param_chunk_position = capture_file->tellg();
+
+			//write tag
+			capture_file->write(param_tag.c_str(), TAG_SIZE);
+			//placeholder for eventual chunk size.
+			capture_file->write("0000", RIFF_SIZE);
+
+			//write parameter data
+			const char* data;	unsigned int data_length = 0;
+			switch (chunk.params[param_tag]->get_type_id()) {
+				case INT_TYPE:
+					data = chunk.get_parameter_by_tag_as_char_ptr<int>(param_tag, &data_length);
+					break;
+				case INT_64_TYPE:
+					data = chunk.get_parameter_by_tag_as_char_ptr<int64_t>(param_tag, &data_length);
+					break;
+				case CHAR_PTR_TYPE:
+					data = chunk.get_parameter_by_tag_as_char_ptr<char*>(param_tag, &data_length);
+					break;
+			}
+			capture_file->write(data, data_length);
+
+			//write chunk size.
+			std::streamoff param_chunk_end_position = capture_file->tellg();
+			capture_file->seekg(param_chunk_position + TAG_SIZE, std::ios_base::beg);
+			int param_chunk_size = param_chunk_end_position - (param_chunk_position + TAG_SIZE + RIFF_SIZE);
+			capture_file->write(reinterpret_cast<const char*>(&param_chunk_size), RIFF_SIZE);
+			//go to end of chunk again.
+			capture_file->seekg(param_chunk_end_position, std::ios_base::beg);
+		}
+
 		void add(Chunk chunk) {
 			//adds and writes the chunk data to capture_file
 
@@ -155,38 +190,34 @@ namespace rfr {
 			capture_file->write(chunk.tag.c_str(), TAG_SIZE);
 			//placeholder for eventual chunk size.
 			capture_file->write("0000", RIFF_SIZE);
+			//chunk index
+			_chunk_index.push_back(FileIndexPt<std::string>(chunk_position, chunk.tag));
+
 			//now, each sub-chunk
 			std::map<std::string, std::shared_ptr<AbstractParam>>::iterator param_it;
+			std::vector<std::string> param_tags_to_write;
 			for (param_it = chunk.params.begin(); param_it != chunk.params.end(); param_it++) {
-				std::streamoff param_chunk_position = capture_file->tellg();
-
-				//write tag
-				capture_file->write(param_it->first.c_str(), TAG_SIZE);
-				//placeholder for eventual chunk size.
-				capture_file->write("0000", RIFF_SIZE);
-
-				//write parameter data
-				const char* data;	unsigned int data_length = 0;
-				switch (param_it->second->get_type_id()) {
-					case INT_TYPE:
-						data = chunk.get_parameter_by_tag_as_char_ptr<int>(param_it->first, &data_length);
-						break;
-					case INT_64_TYPE:
-						data = chunk.get_parameter_by_tag_as_char_ptr<int64_t>(param_it->first, &data_length);
-						break;
-					case CHAR_PTR_TYPE:
-						data = chunk.get_parameter_by_tag_as_char_ptr<char*>(param_it->first, &data_length);
-						break;
+				param_tags_to_write.push_back(param_it->first);
+			}
+			//first, write indexing values.
+			for (_param_index_it = _param_index.begin(); _param_index_it != _param_index.end(); ++_param_index_it) {
+				const std::string indexing_tag = _param_index_it->first;
+				int64_t* index_value = chunk.get_parameter_by_tag<int64_t>(indexing_tag);
+				if (index_value != nullptr) {
+					_param_index[indexing_tag].push_back(FileIndexPt<int64_t>(chunk_position, *index_value));
+					//add to disk
+					_add_param(chunk, indexing_tag);
+					//remove from "to write" list.
+					std::vector<std::string>::iterator find_it = std::find(	param_tags_to_write.begin(), 
+																			param_tags_to_write.end(), 
+																			indexing_tag);
+					param_tags_to_write.erase(find_it);
 				}
-				capture_file->write(data, data_length);
+			}
 
-				//write chunk size.
-				std::streamoff param_chunk_end_position = capture_file->tellg();
-				capture_file->seekg(param_chunk_position + TAG_SIZE, std::ios_base::beg);
-				int param_chunk_size = param_chunk_end_position - (param_chunk_position + TAG_SIZE + RIFF_SIZE);
-				capture_file->write(reinterpret_cast<const char*>(&param_chunk_size), RIFF_SIZE);
-				//go to end of chunk again.
-				capture_file->seekg(param_chunk_end_position, std::ios_base::beg);
+			//next, write remaining values.
+			for (int p = 0; p < param_tags_to_write.size(); p++) {
+				_add_param(chunk, param_tags_to_write[p]);
 			}
 			//write chunk size.
 			std::streamoff chunk_end_position = capture_file->tellg();
@@ -195,16 +226,6 @@ namespace rfr {
 			capture_file->write(reinterpret_cast<const char*>(&chunk_size), RIFF_SIZE);
 			//go to end again.
 			capture_file->seekg(0, std::ios_base::end);
-
-			//index by indexing parameters.
-			_chunk_index.push_back(FileIndexPt<std::string>(chunk_position, chunk.tag));
-			for (_param_index_it = _param_index.begin(); _param_index_it != _param_index.end(); ++_param_index_it) {
-				const std::string indexing_tag = _param_index_it->first;
-				int64_t* index_value = chunk.get_parameter_by_tag<int64_t>(indexing_tag);
-				if (index_value != nullptr) {
-					_param_index[indexing_tag].push_back(FileIndexPt<int64_t>(chunk_position, *index_value));
-				}
-			}
 		}
 
 		Chunk _read_chunk_at_file_pos(int64_t file_pos) {
