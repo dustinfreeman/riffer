@@ -107,8 +107,7 @@ namespace rfr {
 		char** data_typed = get_parameter_by_tag<char*>(param_tag);
 		if (data_typed == nullptr)
 			return nullptr;
-		//the above line may be re-writeable.
-		*length = strlen(*data_typed);
+		*length = strlen(*data_typed); //costly?
 		return *data_typed;
 	}
 };
