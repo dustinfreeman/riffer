@@ -5,14 +5,14 @@
 #include "chunk.h"
 
 namespace rfr {
+	template <class T>
 	struct FileIndexPt {
 		std::streamoff position;
-		int64_t value;
-		//currently, only supporting indexing by int64_t.
+		T value;
 		//int type_id;
-		FileIndexPt(std::streamoff _position, int64_t _value) //, int _type_id)
+		FileIndexPt(std::streamoff _position, T _value) //, int _type_id)
 			: position(_position), value(_value) //, type_id(_type_id) 
-		{}
+		{ }
 	};
 
 	const int BUFFER_SIZE = 1024;
@@ -45,19 +45,21 @@ namespace rfr {
 			}
 		}
 
-		//holds chunk positions in capture_file
-		std::vector<std::streamoff> _chunk_index;
+		//holds chunk positions and chunk tags in capture file.
+		std::vector<FileIndexPt<std::string>> _chunk_index;
 		//the string key in the map below is the 4-char tag itself, not the tag name.
-		std::map<std::string, std::vector<FileIndexPt>> _param_index;
-		std::map<std::string, std::vector<FileIndexPt>>::iterator _param_index_it;
+		std::map<std::string, std::vector<FileIndexPt<int64_t>>> _param_index;
+		std::map<std::string, std::vector<FileIndexPt<int64_t>>>::iterator _param_index_it;
 		void index_by(std::string tag_name) {
 			//informs CaptureSession to index by the given tag.
 			std::string tag = tags::get_tag(tag_name);
-			if (_param_index.find(tag_name) != _param_index.end()) {
-				std::cout << "We are already indexing by " << tag_name << "\n";
-				return;
+			switch(tags::get_type_id_from_tag(tag)) {
+				if (_param_index.find(tag_name) != _param_index.end()) {
+					std::cout << "We are already indexing by " << tag_name << "\n";
+					return;
+				}
 			}
-			_param_index[tag] = std::vector<FileIndexPt>(); //add empty index.
+			_param_index[tag] = std::vector<FileIndexPt<int64_t>>(); //add empty index.
 		}
 
 		void run_index() {
@@ -89,7 +91,6 @@ namespace rfr {
 				std::streamoff chunk_position = capture_file->tellg(); 
 				if(chunk_position >= file_end)
 					break; //apparently eof doesn't work well enough?
-				_chunk_index.push_back(chunk_position);
 
 				//chunk tag
 				capture_file->read(buffer.ch_ptr, TAG_SIZE);
@@ -97,6 +98,9 @@ namespace rfr {
 				//chunk length
 				capture_file->read(buffer.ch_ptr, RIFF_SIZE);
 				int chunk_length = buffer.i;
+				
+				//add to index.
+				_chunk_index.push_back(FileIndexPt<std::string>(chunk_position, tag));
 
 				//look at each sub-chunk
 				if (_param_index.size() == 0)
@@ -126,7 +130,7 @@ namespace rfr {
 								value = buffer.i64;
 								break;
 						}
-						_param_index[sub_tag].push_back(FileIndexPt(chunk_position, value));
+						_param_index[sub_tag].push_back(FileIndexPt<int64_t>(chunk_position, value));
 					}
 					//advance to end of sub-chunk.
 					capture_file->seekg(sub_chunk_position + TAG_SIZE + RIFF_SIZE + sub_chunk_length, std::ios_base::beg);
@@ -193,25 +197,24 @@ namespace rfr {
 			capture_file->seekg(0, std::ios_base::end);
 
 			//index by indexing parameters.
-			_chunk_index.push_back(chunk_position);
-			std::map<std::string, std::vector<FileIndexPt>>::iterator it;
-			for (it = _param_index.begin(); it != _param_index.end(); ++it) {
-				const std::string indexing_tag = it->first;
+			_chunk_index.push_back(FileIndexPt<std::string>(chunk_position, chunk.tag));
+			for (_param_index_it = _param_index.begin(); _param_index_it != _param_index.end(); ++_param_index_it) {
+				const std::string indexing_tag = _param_index_it->first;
 				int64_t* index_value = chunk.get_parameter_by_tag<int64_t>(indexing_tag);
 				if (index_value != nullptr) {
-					_param_index[indexing_tag].push_back(FileIndexPt(chunk_position, *index_value));
+					_param_index[indexing_tag].push_back(FileIndexPt<int64_t>(chunk_position, *index_value));
 				}
 			}
 		}
 
-		Chunk _read_chunk_at_file_index(int64_t file_index) {
+		Chunk _read_chunk_at_file_pos(int64_t file_pos) {
 			//should we be locking the file from other accesses here?
 			if (!capture_file->is_open()) {
 				std::cout << "Cannot read chunk as capture file is not open.\n";
 				return Chunk();
 			}
 
-			capture_file->seekg(file_index, std::ios_base::beg);
+			capture_file->seekg(file_pos, std::ios_base::beg);
 			//std::cout << "reading chunk @ " << capture_file->tellg() << " \n";
 			Chunk chunk = Chunk();
 
@@ -226,7 +229,7 @@ namespace rfr {
 			int chunk_length = buffer.i;
 
 			//read sub-chunks while still inside the chunk.
-			while ((std::streamoff)capture_file->tellg() - file_index < chunk_length + TAG_SIZE + RIFF_SIZE) {
+			while ((std::streamoff)capture_file->tellg() - file_pos < chunk_length + TAG_SIZE + RIFF_SIZE) {
 				std::streamoff sub_chunk_start = capture_file->tellg();
 				//sub-chunk tag
 				capture_file->read(buffer.ch_ptr, TAG_SIZE);
@@ -268,20 +271,19 @@ namespace rfr {
 		}
 
 		Chunk get_at_index(int index) {
-			return _read_chunk_at_file_index(_chunk_index[index]);
+			return _read_chunk_at_file_pos(_chunk_index[index].position);
 		}
 
 		template <class T>
 		Chunk get_at_index_tag(std::string indexing_param_tag, T indexing_value) {
 			//check parameter index exists.
-			std::map<std::string, std::vector<FileIndexPt>>::iterator it;
-			it = _param_index.find(indexing_param_tag);
-			if (it == _param_index.end()) {
+			_param_index_it = _param_index.find(indexing_param_tag);
+			if (_param_index_it == _param_index.end()) {
 				std::cout << "We did not index by " << indexing_param_tag << "\n";
 				return Chunk();
 			}
 
-			std::vector<FileIndexPt> param_file_index = it->second;
+			std::vector<FileIndexPt<int64_t>> param_file_index = _param_index_it->second;
 			//do a binary search within param_file_index
 			int imax = param_file_index.size() - 1;
 			int imin = 0;
@@ -307,7 +309,7 @@ namespace rfr {
 			}
 			//expect imin == imax
 			int64_t file_index = param_file_index[imid].position; 
-			return _read_chunk_at_file_index(file_index);
+			return _read_chunk_at_file_pos(file_index);
 		}
 
 		template <class T>
