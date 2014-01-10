@@ -293,6 +293,17 @@ namespace rfr {
 					imin = imid;
 				else
 					imax = imid;
+
+				//in-between 2 values
+				if (imax - imin == 1) {
+					if (std::abs(param_file_index[imax].value - param_file_index[imid].value) > 
+						std::abs(param_file_index[imid].value - param_file_index[imin].value) ) {
+						//imin is closer
+						imax = imin; imid = imin;
+					} else {
+						imin = imax; imid = imax;
+					}
+				}
 			}
 			//expect imin == imax
 			int64_t file_index = param_file_index[imid].position; 
