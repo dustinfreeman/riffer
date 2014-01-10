@@ -30,7 +30,7 @@ void test_write_read_frames() {
 	if (!cs.capture_file->is_open()) {
 		std::cout << "CaptureSession file not open.\n";
 	} else {
-		std::cout << "CaptureSession file IS open.\n";
+		//std::cout << "CaptureSession file IS open.\n";
 	}
 	
 	//informs the CaptureSession to index by the "timestamp" tag.
@@ -158,6 +158,8 @@ int main() {
 	test_fetch_frames();
 
 	std::cout << "finished.\n";
+
+	while(true) {} //holding pattern.
 }
 
 

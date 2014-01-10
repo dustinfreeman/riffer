@@ -6,11 +6,11 @@
 
 namespace rfr {
 	struct FileIndexPt {
-		int64_t position;
+		std::streamoff position;
 		int64_t value;
 		//currently, only supporting indexing by int64_t.
 		//int type_id;
-		FileIndexPt(int64_t _position, int64_t _value) //, int _type_id)
+		FileIndexPt(std::streamoff _position, int64_t _value) //, int _type_id)
 			: position(_position), value(_value) //, type_id(_type_id) 
 		{}
 	};
@@ -46,7 +46,7 @@ namespace rfr {
 		}
 
 		//holds chunk positions in capture_file
-		std::vector<int64_t> _chunk_index;
+		std::vector<std::streamoff> _chunk_index;
 		//the string key in the map below is the 4-char tag itself, not the tag name.
 		std::map<std::string, std::vector<FileIndexPt>> _param_index;
 		std::map<std::string, std::vector<FileIndexPt>>::iterator _param_index_it;
@@ -69,7 +69,7 @@ namespace rfr {
 			}
 
 			capture_file->seekg(0, std::ios_base::end);
-			std::streampos file_end = capture_file->tellg();
+			std::streamoff file_end = capture_file->tellg();
 
 			//clear current index
 			_chunk_index.clear();
@@ -86,7 +86,7 @@ namespace rfr {
 			// only reading sub-chunks if they are part of the index.
 			while(!capture_file->eof()) {
 				//get chunk start
-				int64_t chunk_position = capture_file->tellg(); 
+				std::streamoff chunk_position = capture_file->tellg(); 
 				if(chunk_position >= file_end)
 					break; //apparently eof doesn't work well enough?
 				_chunk_index.push_back(chunk_position);
@@ -101,8 +101,8 @@ namespace rfr {
 				//look at each sub-chunk
 				if (_param_index.size() == 0)
 					continue; //no indexing of sub-params.
-				while ((int64_t)capture_file->tellg() - chunk_position < chunk_length + TAG_SIZE + RIFF_SIZE) {
-					int64_t sub_chunk_position = capture_file->tellg();
+				while ((std::streamoff)capture_file->tellg() - chunk_position < chunk_length + TAG_SIZE + RIFF_SIZE) {
+					std::streamoff sub_chunk_position = capture_file->tellg();
 					
 					//sub-chunk tag
 					capture_file->read(buffer.ch_ptr, TAG_SIZE);
@@ -142,9 +142,9 @@ namespace rfr {
 				std::cout << "Capture file not open.\n";
 			}
 			capture_file->seekg(0, std::ios_base::end);
-			int64_t chunk_position; 
+			std::streamoff chunk_position; 
 			chunk_position = capture_file->tellp();
-			std::cout << "adding: chunk_position tell p " << chunk_position << "\n";
+			//std::cout << "adding: chunk_position tell p " << chunk_position << "\n";
 
 			//write chunk to file
 			//top-level tag:
@@ -154,7 +154,7 @@ namespace rfr {
 			//now, each sub-chunk
 			std::map<std::string, std::shared_ptr<AbstractParam>>::iterator param_it;
 			for (param_it = chunk.params.begin(); param_it != chunk.params.end(); param_it++) {
-				int64_t param_chunk_position = capture_file->tellg();
+				std::streamoff param_chunk_position = capture_file->tellg();
 
 				//write tag
 				capture_file->write(param_it->first.c_str(), TAG_SIZE);
@@ -177,7 +177,7 @@ namespace rfr {
 				capture_file->write(data, data_length);
 
 				//write chunk size.
-				int64_t param_chunk_end_position = capture_file->tellg();
+				std::streamoff param_chunk_end_position = capture_file->tellg();
 				capture_file->seekg(param_chunk_position + TAG_SIZE, std::ios_base::beg);
 				int param_chunk_size = param_chunk_end_position - (param_chunk_position + TAG_SIZE + RIFF_SIZE);
 				capture_file->write(reinterpret_cast<const char*>(&param_chunk_size), RIFF_SIZE);
@@ -185,7 +185,7 @@ namespace rfr {
 				capture_file->seekg(param_chunk_end_position, std::ios_base::beg);
 			}
 			//write chunk size.
-			int64_t chunk_end_position = capture_file->tellg();
+			std::streamoff chunk_end_position = capture_file->tellg();
 			capture_file->seekg(chunk_position + TAG_SIZE, std::ios_base::beg);
 			int chunk_size = chunk_end_position - (chunk_position + TAG_SIZE + RIFF_SIZE);
 			capture_file->write(reinterpret_cast<const char*>(&chunk_size), RIFF_SIZE);
@@ -226,8 +226,8 @@ namespace rfr {
 			int chunk_length = buffer.i;
 
 			//read sub-chunks while still inside the chunk.
-			while ((int64_t)capture_file->tellg() - file_index < chunk_length + TAG_SIZE + RIFF_SIZE) {
-				int64_t sub_chunk_start = capture_file->tellg();
+			while ((std::streamoff)capture_file->tellg() - file_index < chunk_length + TAG_SIZE + RIFF_SIZE) {
+				std::streamoff sub_chunk_start = capture_file->tellg();
 				//sub-chunk tag
 				capture_file->read(buffer.ch_ptr, TAG_SIZE);
 				std::string sub_tag = std::string(buffer.ch_ptr, TAG_SIZE);
