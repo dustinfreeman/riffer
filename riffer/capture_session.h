@@ -347,7 +347,7 @@ namespace rfr {
 		}
 
 		~CaptureSession() {
-			close();
+			//close();
 		}
 	};
 
