@@ -1,6 +1,8 @@
+#ifndef RFR_PARAM
+#define RFR_PARAM
+
 namespace rfr {
-
-
+	
 	struct AbstractParam {
 		std::string name;
 		virtual ~AbstractParam() {}
@@ -56,6 +58,7 @@ namespace rfr {
 
 };
 
+#endif
 
 //USAGE:
 //rfr::Param<char*>("image", image_bytes)

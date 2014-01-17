@@ -3,6 +3,9 @@
 #include <vector>
 #include <fstream>
 
+#ifndef RFR_CS
+#define RFR_CS
+
 #include "chunk.h"
 
 namespace rfr {
@@ -349,3 +352,5 @@ namespace rfr {
 	};
 
 };
+
+#endif

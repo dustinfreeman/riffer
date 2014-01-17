@@ -2,8 +2,7 @@
 
 #include <assert.h>
 
-#include <tags.h>
-#include <capture_session.h>
+#include <riffer.h>
 
 //Test helper functions =============================
 bool byte_compare(char* array1, char* array2, int length) {

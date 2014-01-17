@@ -1,6 +1,9 @@
 #include <list>
 #include <map>
 
+#ifndef RFR_CHUNK
+#define RFR_CHUNK
+
 #include "param.h"
 
 //http://stackoverflow.com/a/8473603/2518451
@@ -111,6 +114,8 @@ namespace rfr {
 		return *data_typed;
 	}
 };
+
+#endif
 
 //chunk.AddParameter(rfr::Param<int>("height", height));
 

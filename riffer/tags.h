@@ -4,6 +4,9 @@
 #include <iostream>
 #include <stdint.h>
 
+#ifndef RFR_TAGS
+#define RFR_TAGS
+
 namespace rfr {
 
 #define TAG_SIZE 4
@@ -88,3 +91,5 @@ namespace rfr {
 		}
 	};
 };
+
+#endif
