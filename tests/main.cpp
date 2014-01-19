@@ -46,7 +46,8 @@ void test_write_read_frames() {
 	chunk.add_parameter("timestamp", 1234567891011);
 
 	//creating colour image - assume 4 bpp
-	char* image_bytes = new char[width*height*4]; //4 bpp
+	int img_length = width*height*4;
+	char* image_bytes = new char[img_length]; //4 bpp
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
 			char intensity = 255*((width-x) + y)/(width + height);
@@ -58,7 +59,7 @@ void test_write_read_frames() {
 	}
 
 	//Can we make a template with a pointer?
-	chunk.add_parameter("image", image_bytes);//, width*height*4);
+	chunk.add_parameter("image", image_bytes, img_length);//, width*height*4);
 
 	cs.add(chunk);	//writes to disk
 
@@ -70,7 +71,7 @@ void test_write_read_frames() {
 	int64_t read_timestamp = *(chunk_by_index.get_parameter<int64_t>("timestamp"));
 	assert(timestamp == read_timestamp);
 
-	assert(byte_compare(image_bytes, *(chunk_by_index.get_parameter<char*>("image")), width*height*4));
+	assert(byte_compare(image_bytes, *(chunk_by_index.get_parameter<char*>("image")), img_length));
 
 	//below triggers abort() call - not sure why.
 	//assert(chunk == chunk_by_index);
@@ -84,7 +85,7 @@ void test_write_read_frames() {
 	assert(timestamp == *(chunk_by_timestamp.get_parameter<int64_t>("timestamp")));
 	assert(nullptr == chunk_by_timestamp.get_parameter<int64_t>("doesn't exist"));
 
-	assert(byte_compare(image_bytes, *(chunk_by_timestamp.get_parameter<char*>("image")), width*height*4));
+	assert(byte_compare(image_bytes, *(chunk_by_timestamp.get_parameter<char*>("image")), img_length));
 
 	//assert(chunk == chunk_by_timestamp);
 	

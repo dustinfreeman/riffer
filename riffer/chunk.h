@@ -25,7 +25,7 @@ namespace rfr {
 		}
 
 		template <class T>
-		bool add_parameter_by_tag(std::string param_tag, T value) {
+		bool add_parameter_by_tag(std::string param_tag, T value, int length = 0) {
 			//adds a given parameter to the list of parameters
 			//if it exists already, overwrites
 			bool already_exists = false;
@@ -37,10 +37,11 @@ namespace rfr {
 				already_exists = true;
 				Param<T>* ptr = reinterpret_cast<Param<T>*>(it->second.get());
 				ptr->value = value;
+				ptr->length = length;
 			} else {
 				//does not already exist
                 //std::cout << "value adding: " << value << "\n";
-				std::shared_ptr<Param<T>> new_param(new Param<T>(param_tag, value));
+				std::shared_ptr<Param<T>> new_param(new Param<T>(param_tag, value, length));
 				params[param_tag] = new_param;
 			}
 
@@ -48,35 +49,81 @@ namespace rfr {
 		}
 
 		template <class T>
-		bool add_parameter(std::string param_name, T value) {
+		bool add_parameter(std::string param_name, T value, int length = 0) {
 			std::string param_tag = tags::get_tag(param_name);
-			return add_parameter_by_tag<T>(param_tag, value);
+			return add_parameter_by_tag<T>(param_tag, value, length);
 		}
 
+		//for parameters that need a length/size.
+		//template <class T>
+		//bool add_parameter_by_tag(std::string param_tag, T value, int length) {
+		//	//adds a given parameter to the list of parameters
+		//	//if it exists already, overwrites
+		//	bool already_exists = false;
+		//	
+		//	std::map<std::string, std::shared_ptr<AbstractParam>>::iterator it;
+		//	it = params.find(param_tag);
+
+		//	if (it != params.end()) {
+		//		already_exists = true;
+		//		Param<T>* ptr = reinterpret_cast<Param<T>*>(it->second.get());
+		//		ptr->value = value;
+		//		ptr->length = length;
+		//	} else {
+		//		//does not already exist
+  //              //std::cout << "value adding: " << value << "\n";
+		//		std::shared_ptr<Param<T>> new_param(new Param<T>(param_tag, value, length));
+		//		params[param_tag] = new_param;
+		//	}
+
+		//	return already_exists;
+		//}
+		//template <class T>
+		//bool add_parameter(std::string param_name, T value, int length) {
+		//	std::string param_tag = tags::get_tag(param_name);
+		//	return add_parameter_by_tag<T>(param_tag, value, length);
+		//}
+
 		template <class T>
-		T* get_parameter_by_tag(const std::string param_tag) {
+		T* get_parameter_by_tag(const std::string param_tag, unsigned int* length) {
 			std::map<std::string, std::shared_ptr<AbstractParam>>::iterator it;
 			it = params.find(param_tag);
 
 			if (it != params.end()) {
 				Param<T>* ptr = reinterpret_cast<Param<T>*>(it->second.get());
+				*length = ptr->length;
 				return &ptr->value;
 			} else {
+				length = 0;
 				return nullptr;
 			}
 		}
 
 		template <class T>
-		const char* get_parameter_by_tag_as_char_ptr(const std::string param_tag, unsigned int* length);
+		T* get_parameter_by_tag(const std::string param_tag) {
+			unsigned int length; //unused;
+			return get_parameter_by_tag<T>(param_tag, &length);
+		}
 
 		template <class T>
-		T* get_parameter(const std::string param_name) {
+		T* get_parameter(const std::string param_name, unsigned int* length) {
 			std::string param_tag = tags::get_tag(param_name);
 			return get_parameter_by_tag<T>(param_tag);
 		}
 
+		template <class T>
+		T* get_parameter(const std::string param_name) {
+			unsigned int length; //unused;
+			return get_parameter<T>(param_name, &length);
+		}
+
+		//for generic-type binary file writing.
+		template <class T>
+		const char* get_parameter_by_tag_as_char_ptr(const std::string param_tag, unsigned int* length);
+
 		bool operator== (const Chunk &other) {
 			//compares tag and each parameter
+			//CURRENT NOT FUNCTIONAL
 
 			//checks top-level tag.
 			if (tag != other.tag)
@@ -107,10 +154,9 @@ namespace rfr {
 
 	template <>
 	const char* Chunk::get_parameter_by_tag_as_char_ptr<char*>(const std::string param_tag, unsigned int* length) {
-		char** data_typed = get_parameter_by_tag<char*>(param_tag);
+		char** data_typed = get_parameter_by_tag<char*>(param_tag, length); //will set length.
 		if (data_typed == nullptr)
 			return nullptr;
-		*length = strlen(*data_typed); //costly?
 		return *data_typed;
 	}
 };

@@ -5,6 +5,7 @@ namespace rfr {
 	
 	struct AbstractParam {
 		std::string name;
+		int length; //only used by parameters of non-determinant length.
 		virtual ~AbstractParam() {}
 		virtual int get_type_id()=0;
 	};
@@ -12,9 +13,12 @@ namespace rfr {
 	template <class T>
 	struct Param : AbstractParam {
 		T value;
-		Param(std::string _name, T _value)
+		Param(std::string _name, T _value, int _length = 0)
 			: value(_value)
-		{	name == _name;	}
+		{	
+			name = _name;	
+			length = _length;
+		}
 		~Param() { }
 
 		int get_type_id();
