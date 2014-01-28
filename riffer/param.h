@@ -40,15 +40,16 @@ namespace rfr {
 		return INT_TYPE;
 	}
 
+	//I feel like I'm making a mess of the 64-bit ints.
 	template<> //long
 	int Param<int64_t>::get_type_id() {
 		return INT_64_TYPE;
 	}
     
-    template<> //long
-	int Param<long>::get_type_id() {
-		return INT_64_TYPE;
-	} //OSX complained when this wasn't present.
+ //   template<> //long
+	//int Param<long>::get_type_id() {
+	//	return INT_64_TYPE;
+	//} //OSX complained when this wasn't present.
 
 	template<>
 	int Param<char*>::get_type_id() {

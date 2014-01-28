@@ -38,7 +38,6 @@ void test_write_read_frames() {
 	//makes new chunk with top-level tag of "colour frame"
 	rfr::Chunk chunk("colour frame"); 
 	int width = 640; int height = 480;
-	//=================CONTINUE WORK HERE==============================================
 	chunk.add_parameter("width", width);
 	chunk.add_parameter("height", height);
 
