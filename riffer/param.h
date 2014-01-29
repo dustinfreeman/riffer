@@ -19,7 +19,7 @@ namespace rfr {
 			name = _name;	
 			length = _length;
 		}
-		~Param() { }
+		virtual ~Param();
 
 		int get_type_id();
 		
@@ -63,6 +63,22 @@ namespace rfr {
 	int Param<void*>::get_type_id() {
 		return CHAR_PTR_TYPE;
 	}
+
+	//DESTRUCTORS
+	template<>
+	Param<char*>::~Param() {
+		delete value;
+	}
+
+	template<>
+	Param<void*>::~Param() {
+		delete value;
+	}
+
+	template<>
+	Param<__int64>::~Param() { }
+	template<>
+	Param<int>::~Param() { }
 
 };
 

@@ -24,6 +24,11 @@ namespace rfr {
 			tag = tags::get_tag(_tag_name);
 		}
 
+		~Chunk() {
+			//delete each parameter
+			params.clear();
+		}
+
 		template <class T>
 		bool add_parameter_by_tag(std::string param_tag, T value, int length = 0) {
 			//adds a given parameter to the list of parameters
