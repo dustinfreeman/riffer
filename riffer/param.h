@@ -67,18 +67,20 @@ namespace rfr {
 	//DESTRUCTORS
 	template<>
 	Param<char*>::~Param() {
-		delete value;
+		delete[] value;
 	}
 
 	template<>
 	Param<void*>::~Param() {
-		delete value;
+		delete[] value;
 	}
 
 	template<>
 	Param<__int64>::~Param() { }
 	template<>
 	Param<int>::~Param() { }
+	template<>
+	Param<float>::~Param() { }
 
 };
 
