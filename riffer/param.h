@@ -79,8 +79,8 @@ namespace rfr {
 	Param<__int64>::~Param() { }
 	template<>
 	Param<int>::~Param() { }
-	template<>
-	Param<float>::~Param() { }
+	/*template<>
+	Param<float>::~Param() { }*/
 
 };
 
