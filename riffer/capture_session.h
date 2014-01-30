@@ -15,6 +15,10 @@ namespace rfr {
 		T value;
 		std::string chunk_tag;
 		//int type_id;
+
+		//default constructor for invalid FileIndexPt
+		FileIndexPt() : position(-1), chunk_tag(NULL_TAG)
+		{ }
 		FileIndexPt(std::streamoff _position, T _value, std::string _chunk_tag = "") //, int _type_id)
 			: position(_position), value(_value), chunk_tag(_chunk_tag) //, type_id(_type_id) 
 		{ }
@@ -307,16 +311,20 @@ namespace rfr {
 		}
 
 		template <class T>
-		void get_at_index_tag(Chunk* chunk, std::string indexing_param_tag, T indexing_value, std::string tag_filter = "") {
+		FileIndexPt<T> get_index_info_tag(std::string indexing_param_tag, T indexing_value, std::string tag_filter = "") {
 			//check parameter index exists.
+			
+			//weird behaviour: 
+			// if you search get_index_info_tag with parameter value, which already exists, you are not guaranteed to get the value back
+			
 			_param_index_it = _param_index.find(indexing_param_tag);
 			if (_param_index_it == _param_index.end()) {
 				std::cout << "We did not index by " << indexing_param_tag << "\n";
-				return;
+				return FileIndexPt<T>();
 			}
 
 			//find the chunk!
-			std::vector<FileIndexPt<int64_t>> param_file_index = _param_index_it->second;
+			std::vector<FileIndexPt<T>> param_file_index = _param_index_it->second;
 			//do a binary search within param_file_index
 			int imax = param_file_index.size() - 1;
 			int imin = 0;
@@ -341,8 +349,20 @@ namespace rfr {
 				}
 			}
 			//expect imin == imax
-			int64_t file_index = param_file_index[imid].position; 
-			_read_chunk_at_file_pos(chunk, file_index);
+
+			return param_file_index[imid];
+		}
+
+		template <class T>
+		FileIndexPt<T> get_index_info(std::string indexing_param, T indexing_value, std::string tag_filter = "") {
+			return get_index_info_tag<T>(tags::get_tag(indexing_param), indexing_value, tag_filter);
+		}
+
+		template <class T>
+		void get_at_index_tag(Chunk* chunk, std::string indexing_param_tag, T indexing_value, std::string tag_filter = "") {
+			
+			FileIndexPt<T> index_pt = get_index_info_tag(indexing_param_tag, indexing_value);
+			_read_chunk_at_file_pos(chunk, index_pt.position);
 		}
 
 		template <class T>
