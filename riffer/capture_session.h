@@ -62,9 +62,11 @@ namespace rfr {
 		void index_by(std::string tag_name) {
 			//informs CaptureSession to index by the given tag.
 			std::string tag = tags::get_tag(tag_name);
-			if (_param_index.find(tag_name) != _param_index.end()) {
-				std::cout << "We are already indexing by " << tag_name << "\n";
-				return;
+			if (_param_index.size() == 0) {
+				if (_param_index.find(tag) != _param_index.end()) {
+					std::cout << "We are already indexing by " << tag_name << "\n";
+					return;
+				}
 			}
 			
 			_param_index[tag] = std::vector<FileIndexPt<int64_t>>(); //add empty index.
