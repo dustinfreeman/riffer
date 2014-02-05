@@ -324,8 +324,8 @@ namespace rfr {
 			return _read_chunk_at_file_pos(_chunk_index[index].position);
 		}
 
-		template <class T>
-		FileIndexPt<T> get_index_info_tag(std::string indexing_param_tag, T indexing_value, std::string tag_filter = "") {
+		//indexing functions all assume __int64.
+		FileIndexPt<__int64> get_index_info_tag(std::string indexing_param_tag, __int64 indexing_value, std::string tag_filter = "") {
 			//check parameter index exists.
 			
 			//weird behaviour: 
@@ -334,11 +334,11 @@ namespace rfr {
 			_param_index_it = _param_index.find(indexing_param_tag);
 			if (_param_index_it == _param_index.end()) {
 				std::cout << "We did not index by " << indexing_param_tag << "\n";
-				return FileIndexPt<T>();
+				return FileIndexPt<__int64>();
 			}
 
 			//find the chunk!
-			std::vector<FileIndexPt<T>> param_file_index = _param_index_it->second;
+			std::vector<FileIndexPt<__int64>> param_file_index = _param_index_it->second;
 			//do a binary search within param_file_index
 			int imax = param_file_index.size() - 1;
 			int imin = 0;
@@ -367,36 +367,106 @@ namespace rfr {
 			return param_file_index[imid];
 		}
 
-		template <class T>
-		FileIndexPt<T> get_index_info(std::string indexing_param, T indexing_value, std::string tag_filter = "") {
-			return get_index_info_tag<T>(tags::get_tag(indexing_param), indexing_value, tag_filter);
+		FileIndexPt<__int64> get_index_info(std::string indexing_param, __int64 indexing_value, std::string tag_filter = "") {
+			return get_index_info_tag(tags::get_tag(indexing_param), indexing_value, tag_filter);
 		}
 
-		template <class T>
-		void get_at_index_tag(Chunk* chunk, std::string indexing_param_tag, T indexing_value, std::string tag_filter = "") {
+		void get_at_index_tag(Chunk* chunk, std::string indexing_param_tag, __int64 indexing_value, std::string tag_filter = "") {
 			
-			FileIndexPt<T> index_pt = get_index_info_tag(indexing_param_tag, indexing_value);
+			FileIndexPt<__int64> index_pt = get_index_info_tag(indexing_param_tag, indexing_value);
 			_read_chunk_at_file_pos(chunk, index_pt.position);
 		}
 
-		template <class T>
-		Chunk get_at_index_tag(std::string indexing_param_tag, T indexing_value) {
+		Chunk get_at_index_tag(std::string indexing_param_tag, __int64 indexing_value) {
 			Chunk* chunk = new Chunk();;
 			get_at_index_tag(chunk, indexing_param_tag, indexing_value);
 			return *chunk;
 		}
 
-		template <class T>
-		void get_at_index(Chunk* chunk, std::string indexing_param, T indexing_value) {
+		void get_at_index(Chunk* chunk, std::string indexing_param, __int64 indexing_value) {
 			get_at_index_tag(chunk, tags::get_tag(indexing_param), indexing_value);
 		}
 
-		template <class T>
-		Chunk get_at_index(std::string indexing_param, T indexing_value) {
+		Chunk get_at_index(std::string indexing_param, __int64 indexing_value) {
 			Chunk* chunk = new Chunk();;
 			get_at_index(chunk, indexing_param, indexing_value);
 			return *chunk;
 		}
+
+		//template-based indexing section.
+		//template <class T>
+		//FileIndexPt<T> get_index_info_tag(std::string indexing_param_tag, T indexing_value, std::string tag_filter = "") {
+		//	//check parameter index exists.
+		//	
+		//	//weird behaviour: 
+		//	// if you search get_index_info_tag with parameter value, which already exists, you are not guaranteed to get the value back
+		//	
+		//	_param_index_it = _param_index.find(indexing_param_tag);
+		//	if (_param_index_it == _param_index.end()) {
+		//		std::cout << "We did not index by " << indexing_param_tag << "\n";
+		//		return FileIndexPt<T>();
+		//	}
+
+		//	//find the chunk!
+		//	std::vector<FileIndexPt<T>> param_file_index = _param_index_it->second;
+		//	//do a binary search within param_file_index
+		//	int imax = param_file_index.size() - 1;
+		//	int imin = 0;
+		//	int imid = 0;
+		//	while (imax - imin >= 1)
+  //          {
+		//		imid = (imax - imin) / 2 + imin;
+		//		if (param_file_index[imid].value < indexing_value)
+		//			imin = imid;
+		//		else
+		//			imax = imid;
+
+		//		//in-between 2 values
+		//		if (imax - imin == 1) {
+		//			if (std::abs(param_file_index[imax].value - param_file_index[imid].value) > 
+		//				std::abs(param_file_index[imid].value - param_file_index[imin].value) ) {
+		//				//imin is closer
+		//				imax = imin; imid = imin;
+		//			} else {
+		//				imin = imax; imid = imax;
+		//			}
+		//		}
+		//	}
+		//	//expect imin == imax
+
+		//	return param_file_index[imid];
+		//}
+
+		//template <class T>
+		//FileIndexPt<T> get_index_info(std::string indexing_param, T indexing_value, std::string tag_filter = "") {
+		//	return get_index_info_tag<T>(tags::get_tag(indexing_param), indexing_value, tag_filter);
+		//}
+
+		//template <class T>
+		//void get_at_index_tag(Chunk* chunk, std::string indexing_param_tag, T indexing_value, std::string tag_filter = "") {
+		//	
+		//	FileIndexPt<T> index_pt = get_index_info_tag(indexing_param_tag, indexing_value);
+		//	_read_chunk_at_file_pos(chunk, index_pt.position);
+		//}
+
+		//template <class T>
+		//Chunk get_at_index_tag(std::string indexing_param_tag, T indexing_value) {
+		//	Chunk* chunk = new Chunk();;
+		//	get_at_index_tag(chunk, indexing_param_tag, indexing_value);
+		//	return *chunk;
+		//}
+
+		//template <class T>
+		//void get_at_index(Chunk* chunk, std::string indexing_param, T indexing_value) {
+		//	get_at_index_tag(chunk, tags::get_tag(indexing_param), indexing_value);
+		//}
+
+		//template <class T>
+		//Chunk get_at_index(std::string indexing_param, T indexing_value) {
+		//	Chunk* chunk = new Chunk();;
+		//	get_at_index(chunk, indexing_param, indexing_value);
+		//	return *chunk;
+		//}
 
 		void close() {
 			std::cout << "closing file " << (void*)capture_file << " .\n";
