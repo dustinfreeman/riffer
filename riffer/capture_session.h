@@ -1,4 +1,5 @@
 #include <string>
+#include <sstream>
 #include <algorithm>    // std::find
 #include <vector>
 #include <fstream>
@@ -35,8 +36,11 @@ namespace rfr {
 
 	struct CaptureSession {
 		std::fstream* capture_file;
+		std::string folder;
 		std::string filename;
-		CaptureSession(std::string _filename = "./capture.dat", bool overwrite = true) {
+
+		void init(std::string _folder, std::string _filename, bool overwrite) {
+			folder = _folder;
 			filename = _filename;
 			
 			std::ios_base::openmode mode = std::fstream::binary | std::fstream::in | std::fstream::out;
@@ -47,11 +51,19 @@ namespace rfr {
 				mode |= std::fstream::app | std::fstream::ate;
 				//lol syntax
 
-			//capture_file->open(filename, mode);
-			capture_file = new std::fstream(filename, mode);
+			std::stringstream path;
+			path << folder << filename;
+			capture_file = new std::fstream(path.str(), mode);
 			if (!capture_file->is_open()) {
 				std::cout << "Could not open capture file.\n";
 			}
+		}
+
+		CaptureSession(std::string _folder, std::string _filename, bool overwrite = true) {
+			init(_folder, _filename, overwrite);
+		}
+		CaptureSession(std::string _filename = "./capture.dat", bool overwrite = true) {
+			init("", _filename, overwrite);
 		}
 
 		//holds chunk positions and chunk tags in capture file.
