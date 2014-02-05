@@ -69,6 +69,10 @@ namespace rfr {
 	Param<char*>::~Param() {
 		delete[] value;
 	}
+	template<>
+	Param<const char*>::~Param() {
+		delete[] value;
+	}
 
 	template<>
 	Param<void*>::~Param() {
