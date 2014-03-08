@@ -23,11 +23,15 @@ namespace rfr {
 			length = _length;
 			set_value(_value);
 		}
-		virtual ~Param();
+		virtual ~Param() { }
 
-		int get_type_id();
+		virtual int get_type_id() {
+            return UNDEFN_TYPE;
+        }
 		
-		void set_value(T _value);
+		void set_value(T _value) {
+            value = _value;
+        }
 
 		T get_value() {
 			return value;
@@ -41,50 +45,13 @@ namespace rfr {
 	//generally, every set_value is a simple =
 	// however, const values must be copied, since they are just being held on the stack.
 	template<>
-	void Param<bool>::set_value(bool _value) {
-		value = _value;
-	}
-    template<>
-	void Param<int>::set_value(int _value) {
-		value = _value;
-	}
-    template<>
-	void Param<long>::set_value(long _value) {
-        //OSX complains if I don't include this.
-		value = _value;
-	}
-	template<>
-	void Param<int64_t>::set_value(int64_t _value) {
-		value = _value;
-	}
-	template<>
-	void Param<float>::set_value(float _value) {
-		value = _value;
-	}
-	template<>
-	void Param<char*>::set_value(char* _value) {
-		value = _value;
-	}
-	template<>
-	void Param<unsigned char*>::set_value(unsigned char* _value) {
-		value = _value;
-	}
-	template<>
-	void Param<void*>::set_value(void* _value) {
-		value = _value;
-	}
-	template<>
 	void Param<const char*>::set_value(const char* _value) {
 		length = (int)strlen(_value);
 		//above will override of any given value of length;
 		value = (const char*)malloc(length);
 		memcpy((void*)value, (void*)_value, length);
 	}
-    template<>
-	void Param<std::string>::set_value(std::string _value) {
-		value = _value;
-	}
-
+    
 	//get_type_id ===============================
     template<>
 	int Param<bool>::get_type_id() {
@@ -135,30 +102,15 @@ namespace rfr {
 	template<>
 	Param<char*>::~Param() {
 		delete[] value;
-	}
+    }
 	template<>
 	Param<const char*>::~Param() {
 		free((void*)value);
-	}
+    }
 	template<>
 	Param<void*>::~Param() {
 		delete[] value;
 	}
-
-	template<>
-	Param<int64_t>::~Param() { }
-    template<>
-	Param<long>::~Param() { }
-	template<>
-	Param<int>::~Param() { }
-    template<>
-	Param<float>::~Param() { }
-    template<>
-	Param<bool>::~Param() { }
-    template<>
-	Param<std::string>::~Param() { }
-	/*template<>
-	Param<float>::~Param() { }*/
 
 };
 
