@@ -15,9 +15,12 @@ namespace rfr {
 
 #define UNDEFN_TYPE -1
 #define CHUNK_TYPE 0
-#define INT_TYPE 1
-#define INT_64_TYPE 2
-#define CHAR_PTR_TYPE 3
+#define BOOL_TYPE 1
+#define INT_TYPE 2
+#define INT_64_TYPE 3
+#define FLOAT_TYPE 4
+#define CHAR_PTR_TYPE 5
+#define STRING_TYPE 6
 
 #define NULL_TAG "NULL"
 

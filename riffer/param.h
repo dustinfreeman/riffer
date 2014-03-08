@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#include <string>
+
 namespace rfr {
 	
 	struct AbstractParam {
@@ -39,6 +41,10 @@ namespace rfr {
 	//generally, every set_value is a simple =
 	// however, const values must be copied, since they are just being held on the stack.
 	template<>
+	void Param<bool>::set_value(bool _value) {
+		value = _value;
+	}
+    template<>
 	void Param<int>::set_value(int _value) {
 		value = _value;
 	}
@@ -74,8 +80,16 @@ namespace rfr {
 		value = (const char*)malloc(length);
 		memcpy((void*)value, (void*)_value, length);
 	}
+    template<>
+	void Param<std::string>::set_value(std::string _value) {
+		value = _value;
+	}
 
 	//get_type_id ===============================
+    template<>
+	int Param<bool>::get_type_id() {
+		return BOOL_TYPE;
+	}
 	template<>
 	int Param<int>::get_type_id() {
 		return INT_TYPE;
@@ -88,6 +102,11 @@ namespace rfr {
     template<> //long
 	int Param<int64_t>::get_type_id() {
 		return INT_64_TYPE;
+	}
+    
+    template<>
+	int Param<float>::get_type_id() {
+		return FLOAT_TYPE;
 	}
     
 	//template<> //long
@@ -107,6 +126,10 @@ namespace rfr {
 	int Param<void*>::get_type_id() {
 		return CHAR_PTR_TYPE;
 	}
+    template<>
+	int Param<std::string>::get_type_id() {
+		return STRING_TYPE;
+	}
 
 	//destructors ===============================
 	template<>
@@ -117,7 +140,6 @@ namespace rfr {
 	Param<const char*>::~Param() {
 		free((void*)value);
 	}
-
 	template<>
 	Param<void*>::~Param() {
 		delete[] value;
@@ -129,6 +151,12 @@ namespace rfr {
 	Param<long>::~Param() { }
 	template<>
 	Param<int>::~Param() { }
+    template<>
+	Param<float>::~Param() { }
+    template<>
+	Param<bool>::~Param() { }
+    template<>
+	Param<std::string>::~Param() { }
 	/*template<>
 	Param<float>::~Param() { }*/
 
