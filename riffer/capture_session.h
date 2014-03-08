@@ -183,6 +183,7 @@ namespace rfr {
 					data = chunk.get_parameter_by_tag_as_char_ptr<char*>(param_tag, &data_length);
 					break;
 				default:
+                    data = nullptr;
 					std::cout << "Unknown data type!\n";
 					break;
 			}
@@ -191,7 +192,7 @@ namespace rfr {
 			//write chunk size.
 			std::streamoff param_chunk_end_position = capture_file->tellg();
 			capture_file->seekg(param_chunk_position + TAG_SIZE, std::ios_base::beg);
-			int param_chunk_size = param_chunk_end_position - (param_chunk_position + TAG_SIZE + RIFF_SIZE);
+			int param_chunk_size = (int)(param_chunk_end_position - (param_chunk_position + TAG_SIZE + RIFF_SIZE));
 			capture_file->write(reinterpret_cast<const char*>(&param_chunk_size), RIFF_SIZE);
 			//go to end of chunk again.
 			capture_file->seekg(param_chunk_end_position, std::ios_base::beg);
@@ -246,7 +247,7 @@ namespace rfr {
 			//write chunk size.
 			std::streamoff chunk_end_position = capture_file->tellg();
 			capture_file->seekg(chunk_position + TAG_SIZE, std::ios_base::beg);
-			int chunk_size = chunk_end_position - (chunk_position + TAG_SIZE + RIFF_SIZE);
+			int chunk_size = (int)(chunk_end_position - (chunk_position + TAG_SIZE + RIFF_SIZE));
 			capture_file->write(reinterpret_cast<const char*>(&chunk_size), RIFF_SIZE);
 			//std::cout << _chunk_index.size() << " - " << chunk_position << " chunk_size " << chunk_size << "\n";
 			//go to end again.
@@ -324,8 +325,8 @@ namespace rfr {
 			return _read_chunk_at_file_pos(_chunk_index[index].position);
 		}
 
-		//indexing functions all assume __int64.
-		FileIndexPt<__int64> get_index_info_tag(std::string indexing_param_tag, __int64 indexing_value, std::string tag_filter = "") {
+		//indexing functions all assume int64_t.
+		FileIndexPt<int64_t> get_index_info_tag(std::string indexing_param_tag, int64_t indexing_value, std::string tag_filter = "") {
 			//check parameter index exists.
 			
 			//weird behaviour: 
@@ -334,15 +335,15 @@ namespace rfr {
 			_param_index_it = _param_index.find(indexing_param_tag);
 			if (_param_index_it == _param_index.end()) {
 				std::cout << "We did not index by " << indexing_param_tag << "\n";
-				return FileIndexPt<__int64>();
+				return FileIndexPt<int64_t>();
 			}
 
 			//find the chunk!
-			std::vector<FileIndexPt<__int64>> param_file_index = _param_index_it->second;
+			std::vector<FileIndexPt<int64_t>> param_file_index = _param_index_it->second;
 			//do a binary search within param_file_index
-			int imax = param_file_index.size() - 1;
-			int imin = 0;
-			int imid = 0;
+			int64_t imax = param_file_index.size() - 1;
+			int64_t imin = 0;
+			int64_t imid = 0;
 			while (imax - imin >= 1)
             {
 				imid = (imax - imin) / 2 + imin;
@@ -367,27 +368,27 @@ namespace rfr {
 			return param_file_index[imid];
 		}
 
-		FileIndexPt<__int64> get_index_info(std::string indexing_param, __int64 indexing_value, std::string tag_filter = "") {
+		FileIndexPt<int64_t> get_index_info(std::string indexing_param, int64_t indexing_value, std::string tag_filter = "") {
 			return get_index_info_tag(tags::get_tag(indexing_param), indexing_value, tag_filter);
 		}
 
-		void get_at_index_tag(Chunk* chunk, std::string indexing_param_tag, __int64 indexing_value, std::string tag_filter = "") {
+		void get_at_index_tag(Chunk* chunk, std::string indexing_param_tag, int64_t indexing_value, std::string tag_filter = "") {
 			
-			FileIndexPt<__int64> index_pt = get_index_info_tag(indexing_param_tag, indexing_value);
+			FileIndexPt<int64_t> index_pt = get_index_info_tag(indexing_param_tag, indexing_value);
 			_read_chunk_at_file_pos(chunk, index_pt.position);
 		}
 
-		Chunk get_at_index_tag(std::string indexing_param_tag, __int64 indexing_value) {
+		Chunk get_at_index_tag(std::string indexing_param_tag, int64_t indexing_value) {
 			Chunk* chunk = new Chunk();;
 			get_at_index_tag(chunk, indexing_param_tag, indexing_value);
 			return *chunk;
 		}
 
-		void get_at_index(Chunk* chunk, std::string indexing_param, __int64 indexing_value) {
+		void get_at_index(Chunk* chunk, std::string indexing_param, int64_t indexing_value) {
 			get_at_index_tag(chunk, tags::get_tag(indexing_param), indexing_value);
 		}
 
-		Chunk get_at_index(std::string indexing_param, __int64 indexing_value) {
+		Chunk get_at_index(std::string indexing_param, int64_t indexing_value) {
 			Chunk* chunk = new Chunk();;
 			get_at_index(chunk, indexing_param, indexing_value);
 			return *chunk;

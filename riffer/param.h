@@ -1,6 +1,8 @@
 #ifndef RFR_PARAM
 #define RFR_PARAM
 
+#include <stdint.h>
+
 namespace rfr {
 	
 	struct AbstractParam {
@@ -40,8 +42,13 @@ namespace rfr {
 	void Param<int>::set_value(int _value) {
 		value = _value;
 	}
+    template<>
+	void Param<long>::set_value(long _value) {
+        //OSX complains if I don't include this.
+		value = _value;
+	}
 	template<>
-	void Param<__int64>::set_value(__int64 _value) {
+	void Param<int64_t>::set_value(int64_t _value) {
 		value = _value;
 	}
 	template<>
@@ -62,7 +69,7 @@ namespace rfr {
 	}
 	template<>
 	void Param<const char*>::set_value(const char* _value) {
-		length = strlen(_value);
+		length = (int)strlen(_value);
 		//above will override of any given value of length;
 		value = (const char*)malloc(length);
 		memcpy((void*)value, (void*)_value, length);
@@ -75,6 +82,10 @@ namespace rfr {
 	}
 	//I feel like I'm making a mess of the 64-bit ints.
 	template<> //long
+	int Param<long>::get_type_id() {
+		return INT_64_TYPE;
+	}
+    template<> //long
 	int Param<int64_t>::get_type_id() {
 		return INT_64_TYPE;
 	}
@@ -113,7 +124,9 @@ namespace rfr {
 	}
 
 	template<>
-	Param<__int64>::~Param() { }
+	Param<int64_t>::~Param() { }
+    template<>
+	Param<long>::~Param() { }
 	template<>
 	Param<int>::~Param() { }
 	/*template<>
