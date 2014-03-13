@@ -45,7 +45,7 @@ namespace rfr {
 	//generally, every set_value is a simple =
 	// however, const values must be copied, since they are just being held on the stack.
 	template<>
-	void Param<const char*>::set_value(const char* _value) {
+	inline void Param<const char*>::set_value(const char* _value) {
 		length = (int)strlen(_value);
 		//above will override of any given value of length;
 		value = (const char*)malloc(length);
@@ -54,25 +54,25 @@ namespace rfr {
     
 	//get_type_id ===============================
     template<>
-	int Param<bool>::get_type_id() {
+	inline int Param<bool>::get_type_id() {
 		return BOOL_TYPE;
 	}
 	template<>
-	int Param<int>::get_type_id() {
+	inline int Param<int>::get_type_id() {
 		return INT_TYPE;
 	}
 	//I feel like I'm making a mess of the 64-bit ints.
 	template<> //long
-	int Param<long>::get_type_id() {
+	inline int Param<long>::get_type_id() {
 		return INT_64_TYPE;
 	}
     template<> //long
-	int Param<int64_t>::get_type_id() {
+	inline int Param<int64_t>::get_type_id() {
 		return INT_64_TYPE;
 	}
     
     template<>
-	int Param<float>::get_type_id() {
+	inline int Param<float>::get_type_id() {
 		return FLOAT_TYPE;
 	}
     
@@ -82,33 +82,33 @@ namespace rfr {
 	//} //OSX complained when this wasn't present.
 
 	template<>
-	int Param<char*>::get_type_id() {
+	inline int Param<char*>::get_type_id() {
 		return CHAR_PTR_TYPE;
 	}
 	template<>
-	int Param<const char*>::get_type_id() {
+	inline int Param<const char*>::get_type_id() {
 		return CHAR_PTR_TYPE;
 	}
 	template<>
-	int Param<void*>::get_type_id() {
+	inline int Param<void*>::get_type_id() {
 		return CHAR_PTR_TYPE;
 	}
     template<>
-	int Param<std::string>::get_type_id() {
+	inline int Param<std::string>::get_type_id() {
 		return STRING_TYPE;
 	}
 
 	//destructors ===============================
 	template<>
-	Param<char*>::~Param() {
+	inline Param<char*>::~Param() {
 		delete[] value;
     }
 	template<>
-	Param<const char*>::~Param() {
+	inline Param<const char*>::~Param() {
 		free((void*)value);
     }
 	template<>
-	Param<void*>::~Param() {
+	inline Param<void*>::~Param() {
 		delete[] value;
 	}
 

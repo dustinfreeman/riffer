@@ -35,10 +35,10 @@ namespace rfr {
 		};
 
 		//should not access _tags directly externally.
-		std::map<std::string, tag_defn> _tags;
-		std::map<std::string, tag_defn>::iterator _tags_it;
+		static std::map<std::string, tag_defn> _tags;
+		static std::map<std::string, tag_defn>::iterator _tags_it;
 
-		void register_tag(std::string _name, std::string _tag, int _type_id) {
+		static void register_tag(std::string _name, std::string _tag, int _type_id) {
 			bool already_registered = false;
 			//check if name already registered
 			if (_tags.find(_name) != _tags.end()) {
@@ -60,7 +60,7 @@ namespace rfr {
 			_tags[_name] = tag_defn(_name, _tag, _type_id);
 		}
 
-		void register_from_file(std::string filename) {
+		static void register_from_file(std::string filename) {
 			//will iteratively call register based on lines of a given file.
 			//Expected file format:
 			//tag name 1 = tag key 1
@@ -71,7 +71,7 @@ namespace rfr {
 		}
 
 		//this function will be called often. Cannot have high performance cost.
-		std::string get_tag(std::string _name) {
+		inline std::string get_tag(std::string _name) {
 			/*if (_name == NULL_TAG)
 				return NULL_TAG;*/
 			_tags_it = _tags.find(_name);
@@ -84,7 +84,7 @@ namespace rfr {
 		//as opposed to (likely faster) compile-time with tag key constants
 		//as this is easier for inheritance.
 
-		int get_type_id_from_tag(std::string _tag) {
+		static int get_type_id_from_tag(std::string _tag) {
 			std::map<std::string,tag_defn>::iterator it;
 			for (it = _tags.begin(); it != _tags.end(); it++) {
 				if (_tag == it->second.tag)

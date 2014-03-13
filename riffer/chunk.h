@@ -1,6 +1,8 @@
 #include <list>
 #include <map>
 
+#pragma once
+
 #ifndef RFR_CHUNK
 #define RFR_CHUNK
 
@@ -140,7 +142,7 @@ namespace rfr {
 	};
 
 	template <>
-	const char* Chunk::get_parameter_by_tag_as_char_ptr<int>(const std::string param_tag, unsigned int* length) {
+	inline const char* Chunk::get_parameter_by_tag_as_char_ptr<int>(const std::string param_tag, unsigned int* length) {
 		int* data_typed = get_parameter_by_tag<int>(param_tag);
 		if (data_typed == nullptr)
 			return nullptr;
@@ -149,7 +151,7 @@ namespace rfr {
 	}
 	
 	template <>
-	const char* Chunk::get_parameter_by_tag_as_char_ptr<int64_t>(const std::string param_tag, unsigned int* length) {
+	inline const char* Chunk::get_parameter_by_tag_as_char_ptr<int64_t>(const std::string param_tag, unsigned int* length) {
 		int64_t* data_typed = get_parameter_by_tag<int64_t>(param_tag);
 		if (data_typed == nullptr)
 			return nullptr;
@@ -158,7 +160,7 @@ namespace rfr {
 	}
 
 	template <>
-	const char* Chunk::get_parameter_by_tag_as_char_ptr<char*>(const std::string param_tag, unsigned int* length) {
+	inline const char* Chunk::get_parameter_by_tag_as_char_ptr<char*>(const std::string param_tag, unsigned int* length) {
 		char** data_typed = get_parameter_by_tag<char*>(param_tag, length); //will set length.
 		if (data_typed == nullptr)
 			return nullptr;
