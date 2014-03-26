@@ -182,6 +182,9 @@ namespace rfr {
 				case CHAR_PTR_TYPE:
 					data = chunk.get_parameter_by_tag_as_char_ptr<char*>(param_tag, &data_length);
 					break;
+				case STR_TYPE:
+					data = chunk.get_parameter_by_tag_as_char_ptr<char*>(param_tag, &data_length);
+					break;
 				default:
                     data = nullptr;
 					std::cout << "Unknown data type!\n";

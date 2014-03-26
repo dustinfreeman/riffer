@@ -125,7 +125,7 @@ void test_fetch_frames() {
 	cs.index_by("timestamp");
 	for (int i = 0; i < frame_tags.size(); i++) {
 		rfr::Chunk chunk("frame");
-		chunk.add_parameter("number", frame_tags[i].c_str());
+		chunk.add_parameter("number", frame_tags[i]);
 		chunk.add_parameter("timestamp", timestamps[i]);
 		cs.add(chunk);
 	}
@@ -133,7 +133,7 @@ void test_fetch_frames() {
 	//test indexing
 	for (int i = (int)(frame_tags.size() - 1); i >=0; i--) {
 		char* fetched_number = *(cs.get_at_index(i).get_parameter<char*>("number"));
-        //std::cout << fetched_number << " - " << frame_tags[i].c_str() << "\n";
+        std::cout << fetched_number << " - " << frame_tags[i].c_str() << "\n";
 		assert(strcmp(fetched_number, frame_tags[i].c_str()) == 0);
 	}
 
