@@ -55,6 +55,7 @@ namespace rfr {
 			path << folder;
 			path << filename;
 			std::cout << "Opening " << path.str() << "...\n";
+			//NOTE: directory must exist initially.
 			capture_file = new std::fstream(path.str(), mode);
 			if (!capture_file->is_open()) {
 				std::cout << "Could not open capture file.\n";
