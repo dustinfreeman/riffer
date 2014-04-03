@@ -312,8 +312,9 @@ namespace rfr {
 						{
 							char* buffer_ptr = new char[sub_chunk_length];
 							capture_file->read(buffer_ptr, sub_chunk_length);
-							std::string str(buffer_ptr);
+							std::string str(buffer_ptr, sub_chunk_length);
 							chunk->add_parameter_by_tag<std::string>(sub_tag, str, sub_chunk_length);
+							//delete buffer_ptr;
 						}
 						break;
 					case UNDEFN_TYPE:

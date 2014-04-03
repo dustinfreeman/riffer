@@ -132,9 +132,13 @@ void test_fetch_frames() {
 
 	//test indexing
 	for (int i = (int)(frame_tags.size() - 1); i >=0; i--) {
-		char* fetched_number = *(cs.get_at_index(i).get_parameter<char*>("number"));
-        std::cout << fetched_number << " - " << frame_tags[i].c_str() << "\n";
-		assert(strcmp(fetched_number, frame_tags[i].c_str()) == 0);
+		std::string* fetched_number = cs.get_at_index(i).get_parameter<std::string>("number");
+		if (!fetched_number) {
+			std::cout << "Missing number on fetch! \n";
+		} else {
+			std::cout << frame_tags[i].c_str() << " - " << fetched_number->c_str() <<  "\n";
+			assert(strcmp(fetched_number->c_str(), frame_tags[i].c_str()) == 0);
+		}
 	}
 
 	//indexing by timestamp
