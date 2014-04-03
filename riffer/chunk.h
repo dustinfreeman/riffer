@@ -166,6 +166,14 @@ namespace rfr {
 			return nullptr;
 		return *data_typed;
 	}
+
+	template <>
+	inline const char* Chunk::get_parameter_by_tag_as_char_ptr<std::string>(const std::string param_tag, unsigned int* length) {
+		std::string* data_typed = get_parameter_by_tag<std::string>(param_tag, length); //will set length.
+		if (data_typed == nullptr)
+			return nullptr;
+		return data_typed->c_str();
+	}
 };
 
 #endif

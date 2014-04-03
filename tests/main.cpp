@@ -104,7 +104,7 @@ void test_fetch_frames() {
 	
 	rfr::tags::register_tag("frame", "FRMM", CHUNK_TYPE);
 
-	rfr::tags::register_tag("number", "NUMM", CHAR_PTR_TYPE);
+	rfr::tags::register_tag("number", "NUMM", STRING_TYPE);
 	
 	std::vector<std::string> frame_tags;
 	std::vector<int64_t> timestamps;

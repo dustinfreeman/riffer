@@ -182,8 +182,8 @@ namespace rfr {
 				case CHAR_PTR_TYPE:
 					data = chunk.get_parameter_by_tag_as_char_ptr<char*>(param_tag, &data_length);
 					break;
-				case STR_TYPE:
-					data = chunk.get_parameter_by_tag_as_char_ptr<char*>(param_tag, &data_length);
+				case STRING_TYPE:
+					data = chunk.get_parameter_by_tag_as_char_ptr<std::string>(param_tag, &data_length);
 					break;
 				default:
                     data = nullptr;
@@ -306,6 +306,14 @@ namespace rfr {
 							char* buffer_ptr = new char[sub_chunk_length];
 							capture_file->read(buffer_ptr, sub_chunk_length);
 							chunk->add_parameter_by_tag<char*>(sub_tag, buffer_ptr, sub_chunk_length);
+						}
+						break;
+					case STRING_TYPE:
+						{
+							char* buffer_ptr = new char[sub_chunk_length];
+							capture_file->read(buffer_ptr, sub_chunk_length);
+							std::string str(buffer_ptr);
+							chunk->add_parameter_by_tag<std::string>(sub_tag, str, sub_chunk_length);
 						}
 						break;
 					case UNDEFN_TYPE:

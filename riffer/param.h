@@ -51,6 +51,13 @@ namespace rfr {
 		value = (const char*)malloc(length);
 		memcpy((void*)value, (void*)_value, length);
 	}
+
+	template<>
+	inline void Param<std::string>::set_value(std::string _value) {
+		length = _value.length();
+		//above will override of any given value of length;
+		value = _value;
+	}
     
 	//get_type_id ===============================
     template<>
