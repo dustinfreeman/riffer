@@ -143,11 +143,11 @@ void test_fetch_frames() {
 
 	//indexing by timestamp
     
-	assert( 0==strcmp(*(cs.get_at_index("timestamp",2500).get_parameter<char*>("number")), frame_tags[1].c_str()) );
-	assert( 0==strcmp(*(cs.get_at_index("timestamp",10001).get_parameter<char*>("number")), frame_tags[4].c_str()) );
+	assert( 0==strcmp((cs.get_at_index("timestamp",2500).get_parameter<std::string>("number")->c_str()), frame_tags[1].c_str()) );
+	assert( 0==strcmp((cs.get_at_index("timestamp",10001).get_parameter<std::string>("number")->c_str()), frame_tags[4].c_str()) );
 	//in the middle of two value indexes - should choose the closest.
-    assert( 0==strcmp(*(cs.get_at_index("timestamp",8000).get_parameter<char*>("number")), frame_tags[3].c_str()) );
-	assert( 0==strcmp(*(cs.get_at_index("timestamp",200001).get_parameter<char*>("number")), frame_tags[9].c_str()) );
+    assert( 0==strcmp((cs.get_at_index("timestamp",8000).get_parameter<std::string>("number")->c_str()), frame_tags[3].c_str()) );
+	assert( 0==strcmp((cs.get_at_index("timestamp",200001).get_parameter<std::string>("number")->c_str()), frame_tags[9].c_str()) );
 
 }
 
