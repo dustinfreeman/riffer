@@ -52,18 +52,17 @@ namespace rfr {
 				//lol syntax
 
 			std::stringstream path;
-			path << folder << filename;
+			path << folder;
+			path << filename;
+			std::cout << "Opening " << path.str() << "...\n";
 			capture_file = new std::fstream(path.str(), mode);
 			if (!capture_file->is_open()) {
 				std::cout << "Could not open capture file.\n";
 			}
 		}
 
-		CaptureSession(std::string _folder, std::string _filename, bool overwrite = true) {
+		CaptureSession(std::string _folder = "./", std::string _filename = "capture.dat", bool overwrite = true) {
 			init(_folder, _filename, overwrite);
-		}
-		CaptureSession(std::string _filename = "./capture.dat", bool overwrite = true) {
-			init("", _filename, overwrite);
 		}
 
 		//holds chunk positions and chunk tags in capture file.

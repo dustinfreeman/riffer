@@ -25,7 +25,7 @@ void RegisterTags() {
 }
 
 void test_write_read_frames() {
-	rfr::CaptureSession cs("./capture.dat");
+	rfr::CaptureSession cs;
 	if (!cs.capture_file->is_open()) {
 		std::cout << "CaptureSession file not open.\n";
 	} else {
@@ -91,7 +91,7 @@ void test_write_read_frames() {
 	//======Close and re-open
 	cs.close();
 
-	rfr::CaptureSession cs_opened("./capture.dat", false);
+	rfr::CaptureSession cs_opened("./", "capture.dat", false);
 	cs_opened.index_by("timestamp");
 	cs_opened.run_index();
 	rfr::Chunk opened_chunk_by_timestamp = cs_opened.get_at_index("timestamp", timestamp);
@@ -164,5 +164,5 @@ int main() {
 
 	std::cout << "finished.\n";
 
-	//while(true) {} //holding pattern.
+	while(true) {} //holding pattern.
 }
