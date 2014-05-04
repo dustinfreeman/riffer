@@ -221,13 +221,13 @@ namespace rfr {
 			//chunk index
 			_chunk_index.push_back(FileIndexPt<std::string>(chunk_position, chunk.tag));
 
-			//now, each sub-chunk
+			//Look at sub-chunks so we can write indexing values first.
 			std::map<std::string, std::shared_ptr<AbstractParam>>::iterator param_it;
 			std::vector<std::string> param_tags_to_write;
 			for (param_it = chunk.params.begin(); param_it != chunk.params.end(); param_it++) {
 				param_tags_to_write.push_back(param_it->first);
 			}
-			//first, write indexing values.
+			//Now, write each sub-chunk.
 			for (_param_index_it = _param_index.begin(); _param_index_it != _param_index.end(); ++_param_index_it) {
 				const std::string indexing_tag = _param_index_it->first;
 				int64_t* index_value = chunk.get_parameter_by_tag<int64_t>(indexing_tag);
