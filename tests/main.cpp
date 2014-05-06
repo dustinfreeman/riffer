@@ -136,7 +136,7 @@ void test_fetch_frames() {
 		if (!fetched_number) {
 			std::cout << "Missing number on fetch! \n";
 		} else {
-			std::cout << frame_tags[i].c_str() << " - " << fetched_number->c_str() <<  "\n";
+			//std::cout << frame_tags[i].c_str() << " - " << fetched_number->c_str() <<  "\n";
 			assert(strcmp(fetched_number->c_str(), frame_tags[i].c_str()) == 0);
 		}
 	}
@@ -164,5 +164,5 @@ int main() {
 
 	std::cout << "finished.\n";
 
-	while(true) {} //holding pattern.
+	//while(true) {} //holding pattern.
 }
