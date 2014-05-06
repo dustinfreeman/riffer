@@ -54,7 +54,7 @@ namespace rfr {
 
 	template<>
 	inline void Param<std::string>::set_value(std::string _value) {
-		length = _value.length();
+		length = (int)_value.length();
 		//above will override of any given value of length;
 		value = _value;
 	}

@@ -67,10 +67,10 @@ namespace rfr {
 		}
 
 		//holds chunk positions and chunk tags in capture file.
-		std::vector<FileIndexPt<std::string>> _chunk_index;
+		std::vector<FileIndexPt<std::string> > _chunk_index;
 		//the string key in the map below is the 4-char tag itself, not the tag name.
-		std::map<std::string, std::vector<FileIndexPt<int64_t>>> _param_index;
-		std::map<std::string, std::vector<FileIndexPt<int64_t>>>::iterator _param_index_it;
+		std::map<std::string, std::vector<FileIndexPt<int64_t> > > _param_index;
+		std::map<std::string, std::vector<FileIndexPt<int64_t> > >::iterator _param_index_it;
 		void index_by(std::string tag_name) {
 			//informs CaptureSession to index by the given tag.
 			std::string tag = tags::get_tag(tag_name);
@@ -81,7 +81,7 @@ namespace rfr {
 				}
 			}
 			
-			_param_index[tag] = std::vector<FileIndexPt<int64_t>>(); //add empty index.
+			_param_index[tag] = std::vector<FileIndexPt<int64_t> >(); //add empty index.
 		}
 
 		void run_index() {
@@ -222,7 +222,7 @@ namespace rfr {
 			_chunk_index.push_back(FileIndexPt<std::string>(chunk_position, chunk.tag));
 
 			//Look at sub-chunks so we can write indexing values first.
-			std::map<std::string, std::shared_ptr<AbstractParam>>::iterator param_it;
+			std::map<std::string, std::shared_ptr<AbstractParam> >::iterator param_it;
 			std::vector<std::string> param_tags_to_write;
 			for (param_it = chunk.params.begin(); param_it != chunk.params.end(); param_it++) {
 				param_tags_to_write.push_back(param_it->first);
@@ -351,7 +351,7 @@ namespace rfr {
 			}
 
 			//find the chunk!
-			std::vector<FileIndexPt<int64_t>> param_file_index = _param_index_it->second;
+			std::vector<FileIndexPt<int64_t> > param_file_index = _param_index_it->second;
 			//do a binary search within param_file_index
 			int64_t imax = param_file_index.size() - 1;
 			int64_t imin = 0;
@@ -421,7 +421,7 @@ namespace rfr {
 		//	}
 
 		//	//find the chunk!
-		//	std::vector<FileIndexPt<T>> param_file_index = _param_index_it->second;
+		//	std::vector<FileIndexPt<T> > param_file_index = _param_index_it->second;
 		//	//do a binary search within param_file_index
 		//	int imax = param_file_index.size() - 1;
 		//	int imin = 0;

@@ -20,7 +20,7 @@ bool map_compare (Map const &lhs, Map const &rhs) {
 namespace rfr {
 	struct Chunk {
 		std::string tag; //the top-level tag
-		std::map<std::string, std::shared_ptr<AbstractParam>> params; //list of parameters
+		std::map<std::string, std::shared_ptr<AbstractParam> > params; //list of parameters
 
 		Chunk(std::string _tag_name = NULL_TAG) {
 			tag = tags::get_tag(_tag_name);
@@ -37,7 +37,7 @@ namespace rfr {
 			//if it exists already, overwrites
 			bool already_exists = false;
 			
-			std::map<std::string, std::shared_ptr<AbstractParam>>::iterator it;
+			std::map<std::string, std::shared_ptr<AbstractParam> >::iterator it;
 			it = params.find(param_tag);
 
 			if (it != params.end()) {
@@ -48,7 +48,7 @@ namespace rfr {
 			} else {
 				//does not already exist
                 //std::cout << "value adding: " << value << "\n";
-				std::shared_ptr<Param<T>> new_param(new Param<T>(param_tag, value, length));
+				std::shared_ptr<Param<T> > new_param(new Param<T>(param_tag, value, length));
 				params[param_tag] = new_param;
 			}
 
@@ -68,7 +68,7 @@ namespace rfr {
 		//	//if it exists already, overwrites
 		//	bool already_exists = false;
 		//	
-		//	std::map<std::string, std::shared_ptr<AbstractParam>>::iterator it;
+		//	std::map<std::string, std::shared_ptr<AbstractParam> >::iterator it;
 		//	it = params.find(param_tag);
 
 		//	if (it != params.end()) {
@@ -79,7 +79,7 @@ namespace rfr {
 		//	} else {
 		//		//does not already exist
   //              //std::cout << "value adding: " << value << "\n";
-		//		std::shared_ptr<Param<T>> new_param(new Param<T>(param_tag, value, length));
+		//		std::shared_ptr<Param<T> > new_param(new Param<T>(param_tag, value, length));
 		//		params[param_tag] = new_param;
 		//	}
 
@@ -93,7 +93,7 @@ namespace rfr {
 
 		template <class T>
 		T* get_parameter_by_tag(const std::string param_tag, unsigned int* length) {
-			std::map<std::string, std::shared_ptr<AbstractParam>>::iterator it;
+			std::map<std::string, std::shared_ptr<AbstractParam> >::iterator it;
 			it = params.find(param_tag);
 
 			if (it != params.end()) {
