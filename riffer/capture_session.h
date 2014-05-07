@@ -341,9 +341,8 @@ namespace rfr {
 		FileIndexPt<int64_t> get_index_info_tag(std::string indexing_param_tag, int64_t indexing_value, std::string tag_filter = "") {
 			//check parameter index exists.
 			
-			//weird behaviour: 
-			// if you search get_index_info_tag with parameter value, which already exists, you are not guaranteed to get the value back
-			
+			const bool verbose_search = false;
+
 			_param_index_it = _param_index.find(indexing_param_tag);
 			if (_param_index_it == _param_index.end()) {
 				std::cout << "We did not index by " << indexing_param_tag << "\n";
@@ -356,23 +355,48 @@ namespace rfr {
 			int64_t imax = param_file_index.size() - 1;
 			int64_t imin = 0;
 			int64_t imid = 0;
+
 			while (imax - imin >= 1)
             {
 				imid = (imax - imin) / 2 + imin;
-				if (param_file_index[imid].value < indexing_value)
+
+				if (verbose_search) {
+					std::cout << "start imin: " << imin << " imid: " << imid << " imax: " << imax << "\n";
+				}
+
+				if (param_file_index[imid].value < indexing_value) {
 					imin = imid;
-				else
+					if (verbose_search)
+						std::cout << "imin = imid; \n";
+				} else {
 					imax = imid;
+					if (verbose_search)
+						std::cout << "imax = imid; \n";
+				}
 
 				//in-between 2 values
 				if (imax - imin == 1) {
-					if (std::abs(param_file_index[imax].value - param_file_index[imid].value) > 
-						std::abs(param_file_index[imid].value - param_file_index[imin].value) ) {
+					if (verbose_search) {
+						std::cout << "indexing value: " << indexing_value << " in between: " << param_file_index[imin].value << "," << param_file_index[imid].value << "," << param_file_index[imax].value << "\n";
+						std::cout << "cmp: " << std::abs(param_file_index[imax].value - indexing_value) << "," << std::abs(indexing_value - param_file_index[imin].value) << "\n";
+					}
+
+					if (std::abs(param_file_index[imax].value - indexing_value) > 
+						std::abs(indexing_value - param_file_index[imin].value) ) {
 						//imin is closer
 						imax = imin; imid = imin;
+						if (verbose_search)
+							std::cout << "imax = imin; imid = imin; \n";
 					} else {
 						imin = imax; imid = imax;
+						if (verbose_search)
+							std::cout << "imin = imax; imid = imax; \n";
 					}
+				}
+
+				if (verbose_search) {
+					std::cout << "end   imin: " << imin << " imid: " << imid << " imax: " << imax << "\n";
+					std::cout << "\n";
 				}
 			}
 			//expect imin == imax
