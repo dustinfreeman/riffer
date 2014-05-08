@@ -320,6 +320,9 @@ namespace rfr {
 					case UNDEFN_TYPE:
 						std::cout << "Found tag of undefined type: " << sub_tag << "\n";
 						break;
+					case CHUNK_TYPE:
+						std::cout << "Got chunk type as sub-tag...this is probably an error \n";
+						break;
 				}
 				//for sanity, move file to start of next expected sub-chunk:
 				capture_file->seekg(sub_chunk_start + TAG_SIZE + RIFF_SIZE + sub_chunk_length, std::ios_base::beg);
