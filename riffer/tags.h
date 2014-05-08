@@ -42,21 +42,22 @@ namespace rfr {
 			bool already_registered = false;
 			//check if name already registered
 			if (_tags.find(_name) != _tags.end()) {
-				std::cout << "tag name already registered: " << _name << "\n";
-				already_registered = true;
+				if (_tags[_name].tag != _tag) {
+					std::cout << "tag name already registered: " << _name << " as " << _tags[_name].tag << " (tried " << _tag << ")" << "\n";
+				}
+				return;
 			}
 			//check if tag already registered
 			std::map<std::string,tag_defn>::iterator it;
 			for (it = _tags.begin(); it != _tags.end(); it++) {
 				//apparently it->second is how to access the key.
 				if (it->second.tag == _tag) {
-					std::cout << "tag name already registered: " << _name << "\n";
-					already_registered = true;
+					std::cout << "tag already registered: " << _tag << " with name " << it->second.name << " (tried " << _name << ")" << "\n";
+					return;
 				}	
 			}
-			if (already_registered)
-				return;
 
+			//passed registration checks.
 			_tags[_name] = tag_defn(_name, _tag, _type_id);
 		}
 
