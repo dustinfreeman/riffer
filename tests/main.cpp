@@ -27,7 +27,7 @@ void RegisterTags() {
 
 void test_write_read_frames() {
 	rfr::CaptureSession cs;
-	if (!cs.capture_file->is_open()) {
+	if (!cs.is_open()) {
 		std::cout << "CaptureSession file not open.\n";
 	} else {
 		//std::cout << "CaptureSession file IS open.\n";
@@ -64,7 +64,7 @@ void test_write_read_frames() {
 	cs.add(chunk);	//writes to disk
 
 	//======chunk_by_index and chunk should be identical
-	rfr::Chunk chunk_by_index = cs.get_at_index(0);
+	rfr::Chunk chunk_by_index = cs.get_at(0);
 
 	assert(width == *(chunk_by_index.get_parameter<int>("width")));
 	assert(height == *(chunk_by_index.get_parameter<int>("height")));
@@ -77,7 +77,7 @@ void test_write_read_frames() {
 	//assert(chunk == chunk_by_index);
 	
 	//======chunk_by_timestamp and chunk should be identical
-	rfr::Chunk chunk_by_timestamp = cs.get_at_index("timestamp", timestamp);
+	rfr::Chunk chunk_by_timestamp = cs.get_by_index(timestamp);
 	//for the given "timestamp" component type, gets closest to given value.
 
 	assert(width == *(chunk_by_timestamp.get_parameter<int>("width")));
@@ -95,7 +95,7 @@ void test_write_read_frames() {
 	rfr::CaptureSession cs_opened("./", "capture.dat", false);
 	cs_opened.index_by("timestamp");
 	cs_opened.run_index();
-	rfr::Chunk opened_chunk_by_timestamp = cs_opened.get_at_index("timestamp", timestamp);
+	rfr::Chunk opened_chunk_by_timestamp = cs_opened.get_by_index(timestamp);
 	
 	//assert(chunk == opened_chunk_by_timestamp);
 }
@@ -133,7 +133,7 @@ void test_fetch_frames() {
 
 	//test indexing
 	for (int i = (int)(frame_tags.size() - 1); i >=0; i--) {
-		std::string* fetched_number = cs.get_at_index(i).get_parameter<std::string>("number");
+		std::string* fetched_number = cs.get_at(i).get_parameter<std::string>("number");
 		if (!fetched_number) {
 			std::cout << "Missing number on fetch! \n";
 		} else {
@@ -144,7 +144,7 @@ void test_fetch_frames() {
 
 	//indexing by timestamp
 	for (int i = 0; i < frame_tags.size(); i++) {
-		const char* fetch = cs.get_at_index("timestamp", timestamps[i]).get_parameter<std::string>("number")->c_str();
+		const char* fetch = cs.get_by_index(timestamps[i]).get_parameter<std::string>("number")->c_str();
 		const char* original = frame_tags[i].c_str();
 		int strcmp_result = strcmp(fetch, original);
 
@@ -193,16 +193,32 @@ void test_diff_frame_types() {
 	//test direct results
 	for (int i = 0; i < frame_info.size(); i++) {
 		//fetch using frame filter type
-		rfr::Chunk *chunk = cs.get_at_index("timestamp", frame_info[i].timestamp, frame_info[i].frame_type);
+		rfr::Chunk chunk = cs.get_by_index(frame_info[i].timestamp, frame_info[i].frame_type);
 
-		std::string fetched_frame_type = chunk->tag;
-		assert(fetched_frame_type == frame_info[i].frame_type);
-
-		std::string fetched_data = *chunk->get_parameter<std::string>("data");
+		std::string expected_frame_type_tag = rfr::tags::get_tag(frame_info[i].frame_type);
+		std::string fetched_frame_type_tag = chunk.tag;
+		assert(fetched_frame_type_tag == expected_frame_type_tag);
+		
+		std::string fetched_data = *chunk.get_parameter<std::string>("data");
 		assert(fetched_data == frame_info[i].frame_data);
 	}
 
 	//TODO other tests with close timestamps
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 }
 
