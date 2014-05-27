@@ -203,23 +203,7 @@ void test_diff_frame_types() {
 		assert(fetched_data == frame_info[i].frame_data);
 	}
 
-	//TODO other tests with close timestamps
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	//could do other tests with close timestamps
 }
 
 //===================================================
