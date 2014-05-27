@@ -18,6 +18,7 @@ void RegisterTags() {
 	//for now, tags do not have a built-in type definition.
 	//the point of the Tags structure is human readability.
 	rfr::tags::register_tag("colour frame", "CLUR", CHUNK_TYPE);
+	rfr::tags::register_tag("other frame", "OCLR", CHUNK_TYPE);
 	rfr::tags::register_tag("width", "WDTH", INT_TYPE);
 	rfr::tags::register_tag("height", "HGHT", INT_TYPE);
 	rfr::tags::register_tag("timestamp", "MTMP", INT_64_TYPE);
@@ -154,6 +155,57 @@ void test_fetch_frames() {
 	}
 }
 
+struct FrameInfo {
+	std::string frame_type;
+	std::string frame_data;
+	int64_t timestamp;
+	FrameInfo(std::string _frame_type, std::string _frame_data, int64_t _timestamp)
+		: frame_type(_frame_type), frame_data(_frame_data), timestamp(_timestamp) { }
+};
+
+void test_diff_frame_types() {
+	rfr::tags::register_tag("data", "DATA", STRING_TYPE);
+
+	std::vector<FrameInfo> frame_info;
+	frame_info.push_back(FrameInfo("colour frame", "dog", 1));
+	frame_info.push_back(FrameInfo("other frame", "nog", 1));
+	frame_info.push_back(FrameInfo("other frame", "cat", 100));
+	frame_info.push_back(FrameInfo("other frame", "kitten", 101));
+	frame_info.push_back(FrameInfo("other frame", "moose", 151));
+	frame_info.push_back(FrameInfo("colour frame", "not moose", 152));
+	frame_info.push_back(FrameInfo("colour frame", "raccoon", 221));
+	frame_info.push_back(FrameInfo("colour frame", "jesus", 222));
+	frame_info.push_back(FrameInfo("other frame", "anti-jesus", 222));
+	frame_info.push_back(FrameInfo("other frame", "also jesus", 223));
+	frame_info.push_back(FrameInfo("colour frame", "milkshake", 228));
+	frame_info.push_back(FrameInfo("other frame", "boat", 229));
+
+	rfr::CaptureSession cs;
+	cs.index_by("timestamp");
+
+	for (int i = 0; i < frame_info.size(); i++) {
+		rfr::Chunk chunk(frame_info[i].frame_type);
+		chunk.add_parameter("data", frame_info[i].frame_data);
+		chunk.add_parameter("timestamp", frame_info[i].timestamp);
+		cs.add(chunk);
+	}
+
+	//test direct results
+	for (int i = 0; i < frame_info.size(); i++) {
+		//fetch using frame filter type
+		rfr::Chunk *chunk = cs.get_at_index("timestamp", frame_info[i].timestamp, frame_info[i].frame_type);
+
+		std::string fetched_frame_type = chunk->tag;
+		assert(fetched_frame_type == frame_info[i].frame_type);
+
+		std::string fetched_data = *chunk->get_parameter<std::string>("data");
+		assert(fetched_data == frame_info[i].frame_data);
+	}
+
+	//TODO other tests with close timestamps
+
+}
+
 //===================================================
 int main() {
 	//tag definitions from our local project.
@@ -164,6 +216,8 @@ int main() {
 	test_write_read_frames();
 
 	test_fetch_frames();
+
+	test_diff_frame_types();
 
 	std::cout << "finished.\n";
 
