@@ -36,17 +36,19 @@ namespace rfr {
 
 	class CaptureSession {
 	protected:
+		//file names and handles, titles, masters of the realms.
 		std::fstream* capture_file;
 		std::string folder;
 		std::string filename;
 
-		//holds chunk positions and chunk tags in capture file.
+		//riffer's capture sessions have multiple indices
+		//_chunk_index holds all frame info.
 		std::vector<FileIndexPt<std::string> > _chunk_index;
-
-		//can set to index by a specific indexing parameter (i.e. timestamp)
+		//if indexing_param_tag is set, we index by values of a specific tag (e.g. timestamp)
 		std::string indexing_param_tag;
 		std::vector<FileIndexPt<int64_t> > _index_by_param;
-		std::vector<FileIndexPt<int64_t> >::iterator _param_index_it;
+		//we hold indexes for each chunk tag, so that we can apply filters during search
+		std::map<std::string, std::vector<FileIndexPt<int64_t> > > _filtered_index_by_param;
 		
 		void _add_param(Chunk chunk, std::string param_tag) {
 			//writes the param of the chunk to the file.
@@ -169,6 +171,17 @@ namespace rfr {
 			return *chunk;
 		}
 
+		void add_to_param_index(std::string chunk_tag, int64_t file_chunk_position, int64_t indexing_value) {
+			FileIndexPt<int64_t> index_pt(file_chunk_position, indexing_value);
+			_index_by_param.push_back(index_pt);
+
+			if (_filtered_index_by_param.find(chunk_tag) == _filtered_index_by_param.end()) {
+				//add to filter indices
+				_filtered_index_by_param[chunk_tag] = std::vector<FileIndexPt<int64_t>>();
+			}
+			_filtered_index_by_param[chunk_tag].push_back(index_pt);
+		}
+
 	public:
 		void init(std::string _folder, std::string _filename, bool overwrite) {
 			folder = _folder;
@@ -208,6 +221,7 @@ namespace rfr {
 			
 			//clear out any previous index
 			_index_by_param.clear();
+			_filtered_index_by_param.clear();
 		}
 
 		void run_index() {
@@ -270,7 +284,8 @@ namespace rfr {
 								value = buffer.i64;
 								break;
 						}
-						_index_by_param.push_back(FileIndexPt<int64_t>(chunk_position, value));
+
+						add_to_param_index(tag, chunk_position, value);
 					}
 					//advance to end of sub-chunk.
 					capture_file->seekg(sub_chunk_position + TAG_SIZE + RIFF_SIZE + sub_chunk_length, std::ios_base::beg);
@@ -306,7 +321,7 @@ namespace rfr {
 
 				//adding to indices
 				int64_t indexing_value = *chunk.get_parameter_by_tag<int64_t>(indexing_param_tag);
-				_index_by_param.push_back(FileIndexPt<int64_t>(chunk_position, indexing_value));
+				add_to_param_index(chunk.tag, chunk_position, indexing_value);
 			}
 			//The non-indexing parameters
 			std::map<std::string, std::shared_ptr<AbstractParam> >::iterator param_it;
@@ -336,7 +351,7 @@ namespace rfr {
 		}
 
 		//indexing functions all assume int64_t.
-		FileIndexPt<int64_t> get_index_info_tag(int64_t indexing_value, std::string chunk_tag_filter = "") {
+		FileIndexPt<int64_t> get_index_info_tag(int64_t indexing_value, std::string chunk_filter_tag = "") {
 			//finds the right frame, based on indexing_value
 			
 			const bool verbose_search = false;
@@ -347,7 +362,17 @@ namespace rfr {
 			}
 
 			//selecting the index we are using.
-			std::vector<FileIndexPt<int64_t> > *param_file_index = &_index_by_param;
+			std::vector<FileIndexPt<int64_t> > *param_file_index;
+			if (chunk_filter_tag == NULL_TAG) {
+				param_file_index = &_index_by_param; //global index
+			} else {
+				if (_filtered_index_by_param.find(chunk_filter_tag) == _filtered_index_by_param.end()) {
+					std::cout << "We have no chunks with tag " << chunk_filter_tag << " \n";
+					return FileIndexPt<int64_t>();
+				}
+
+				param_file_index = &_filtered_index_by_param[chunk_filter_tag];
+			}
 
 			//do a binary search within param_file_index
 			int64_t imax = param_file_index->size() - 1;
@@ -402,34 +427,30 @@ namespace rfr {
 			return (*param_file_index)[imid];
 		}
 
-		FileIndexPt<int64_t> get_index_info(int64_t indexing_value, std::string chunk_tag_filter = "") {
-			return get_index_info_tag(indexing_value, chunk_tag_filter);
-		}
-
-		void get_by_index_tag(Chunk* chunk, int64_t indexing_value, std::string chunk_tag_filter = "") {
+		void get_by_index_tag(Chunk* chunk, int64_t indexing_value, std::string chunk_filter_tag = NULL_TAG) {
 			
-			FileIndexPt<int64_t> index_pt = get_index_info_tag(indexing_value);
+			FileIndexPt<int64_t> index_pt = get_index_info_tag(indexing_value, chunk_filter_tag);
 			_read_chunk_at_file_pos(chunk, index_pt.position);
 		}
 
-		Chunk get_by_index_tag(int64_t indexing_value, std::string chunk_tag_filter = "") {
+		Chunk get_by_index_tag(int64_t indexing_value, std::string chunk_filter_tag = NULL_TAG) {
 			Chunk* chunk = new Chunk();;
-			get_by_index_tag(chunk, indexing_value, chunk_tag_filter);
+			get_by_index_tag(chunk, indexing_value, chunk_filter_tag);
 			return *chunk;
 		}
 
-		void get_by_index(Chunk* chunk, int64_t indexing_value, std::string chunk_tag_filter = "") {
-			get_by_index_tag(chunk, indexing_value);
+		void get_by_index(Chunk* chunk, int64_t indexing_value, std::string chunk_filter = "") {
+			get_by_index_tag(chunk, indexing_value, tags::get_tag(chunk_filter));
 		}
 
-		Chunk get_by_index(int64_t indexing_value, std::string chunk_tag_filter = "") {
+		Chunk get_by_index(int64_t indexing_value, std::string chunk_filter = "") {
 			Chunk* chunk = new Chunk();
-			get_by_index(chunk, indexing_value, chunk_tag_filter);
+			get_by_index(chunk, indexing_value, chunk_filter);
 			return *chunk;
 		}
 
 		void close() {
-			std::cout << "closing file " << (void*)capture_file << " .\n";
+			std::cout << "riffer closing file " << (void*)capture_file << " .\n";
 			capture_file->close();
 		}
 
