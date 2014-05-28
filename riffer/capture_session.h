@@ -210,6 +210,10 @@ namespace rfr {
 			return capture_file->is_open();
 		}
 
+		std::string get_folder() {
+			return folder;
+		}
+
 		CaptureSession(std::string _folder = "./", std::string _filename = "capture.dat", bool overwrite = true) {
 			init(_folder, _filename, overwrite);
 		}
@@ -425,6 +429,10 @@ namespace rfr {
 			//expect imin == imax
 
 			return (*param_file_index)[imid];
+		}
+
+		FileIndexPt<int64_t> get_index_info(int64_t indexing_value) {
+			return get_index_info_tag(indexing_value);
 		}
 
 		void get_by_index_tag(Chunk* chunk, int64_t indexing_value, std::string chunk_filter_tag = NULL_TAG) {
