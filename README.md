@@ -17,7 +17,8 @@ Test code is included that demonstrates basic use. Adding to and reading from Ch
     cs.close();
 
 
-This is like the 4th time I have re-written this code from the ground up, and so I decided to make it open-source. A previous version of this code was used for an accepted CHI 2014 submission on live video editing. Previous versions have all been written in C#, so some vestigial C# idioms may appear that I'm trying to weed out.
+This is like the 4th time I have re-written this code from the ground up, and so I decided to make it open-source. A previous version of this code was used for LACES, a touch-based video editor presented at CHI 2014. Video demo here: https://www.youtube.com/watch?v=9zG--3M2DMs
+Previous versions have all been written in C#, so some vestigial C# idioms may appear that I'm trying to weed out.
 
 Riffer is used by two other projects of mine:
 
