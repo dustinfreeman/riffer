@@ -112,11 +112,11 @@ namespace rfr {
     }
 	template<>
 	inline Param<const char*>::~Param() {
-		free((void*)value);
+        delete[] value;
     }
 	template<>
 	inline Param<void*>::~Param() {
-		delete[] value;
+		free(value);
 	}
 
 };
