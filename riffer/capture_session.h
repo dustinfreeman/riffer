@@ -9,6 +9,9 @@
 
 #include "chunk.h"
 
+#define RFR_DEFAULT_FOLDER "./"
+#define RFR_DEFAULT_FILENAME "./capture.dat"
+
 namespace rfr {
 	template <class T>
 	struct FileIndexPt {
@@ -232,7 +235,7 @@ namespace rfr {
 			return folder;
 		}
 
-		CaptureSession(std::string _folder = "./", std::string _filename = "capture.dat", bool overwrite = true) {
+		CaptureSession(std::string _folder = RFR_DEFAULT_FOLDER, std::string _filename = RFR_DEFAULT_FILENAME, bool overwrite = true) {
 			init(_folder, _filename, overwrite);
 		}
 		
