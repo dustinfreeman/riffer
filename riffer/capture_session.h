@@ -74,8 +74,8 @@ namespace rfr {
 		void _add_param(Chunk chunk, std::string param_tag) {
 			//writes the param of the chunk to the file.
 			//helper function for add() below.
-
-			std::streamoff param_chunk_position = capture_file->tellg();
+            
+            std::streamoff param_chunk_position = capture_file->tellg();
 
 			//write tag
 			capture_file->write(param_tag.c_str(), TAG_SIZE);
@@ -211,11 +211,8 @@ namespace rfr {
 			std::ios_base::openmode mode = std::fstream::binary | std::fstream::in | std::fstream::out;
 			//mode |= std::fstream::ate; //create
 			if (overwrite)
-				mode |= std::fstream::trunc; //dicard file contents
-			else
-				mode |= std::fstream::app | std::fstream::ate;
-				//lol syntax
-
+				mode |= std::fstream::trunc; //discard file contents
+			
 			std::stringstream path;
 			path << folder;
 			path << filename;
@@ -287,7 +284,7 @@ namespace rfr {
                 
                 //std::cout << chunk_position << " " << chunk_length << "\n";
                 if (chunk_length == 0 || chunk_position + TAG_SIZE + RIFF_SIZE + chunk_length > real_file_end) {
-                    std::cout << "Corrupt chunk detected and dealt with. \n";
+                    std::cout << "\t corrupt chunk detected and dealt with. \n";
                     //set file end as earlier than expected.
                     _file_end = chunk_position;
                     break;
@@ -342,16 +339,16 @@ namespace rfr {
             
 			std::streamoff chunk_position; 
 			chunk_position = capture_file->tellp();
-			//std::cout << "adding: chunk_position tell p " << chunk_position << "\n";
-
-			//write chunk to file
+			//std::cout << "adding: chunk_position " << chunk_position << "\n";
+            
+            //write chunk to file
 			//top-level tag:
 			capture_file->write(chunk.tag.c_str(), TAG_SIZE);
 			//placeholder for eventual chunk size.
 			capture_file->write("0000", RIFF_SIZE);
 			//chunk index
 			_chunk_index.push_back(FileIndexPt<std::string>(chunk_position, chunk.tag));
-
+            
 			//Create list of param_tags_to_write, with indexing values first.
 			//Look at sub-chunks so we can write indexing parameters first.
 			std::vector<std::string> param_tags_to_write;
@@ -387,8 +384,21 @@ namespace rfr {
             _file_end = -1; //resets our fake file end
 		}
 
+		unsigned long length() {
+			//returns the number of chunks, after indexing
+			return _chunk_index.size();
+		}
+
 		Chunk get_at(int index) {
 			return _read_chunk_at_file_pos(_chunk_index[index].position);
+		}
+
+		Chunk first() {
+			return _read_chunk_at_file_pos(_chunk_index[0].position);
+		}
+
+		Chunk last() {
+			return _read_chunk_at_file_pos(_chunk_index[length() - 1].position);
 		}
 
 		//indexing functions all assume int64_t.

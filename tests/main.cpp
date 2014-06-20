@@ -217,9 +217,9 @@ void test_corruption_load(std::string filename, std::string msg = "") {
     //Question: should run_index be called from the constructor if we are not overwriting?
     //  Answer: No. Indexing needs to know by what tags it is indexing by before running.
     
-    cs.run_index(); //expect corruption to be caught here.
+    cs.run_index(); //expect corruption to be found here.
     
-    
+    cs.close();
 }
 
 void test_corruption_last_chunk() {
@@ -234,6 +234,8 @@ void test_corruption_last_chunk() {
     
     const char* CHUNK_TAG = "CTAG";
     const char* SUBCHUNK_TAG = "STAG";
+    
+    rfr::tags::register_tag("STAG", "STAG", STRING_TYPE);
     
     for (char i = 0; i < 5; i++) {
         capture_file->write(CHUNK_TAG, RIFF_SIZE); //top-level
@@ -262,12 +264,25 @@ void test_corruption_last_chunk() {
     
     //test on load
     test_corruption_load(filename, "test_corruption_last_chunk");
-}
-
-void test_corruption_mid_chunk() {
-    //TODO test_corruption_mid_chunk
     
-    //some smaller, some larger
+    //test adding a chunk.
+    std::cout << "\t adding a chunk to overwrite corruption \n";
+    rfr::CaptureSession cs("./", filename, false);
+    cs.run_index(); //will put file_end pointer at right position.
+    
+    std::string test_value = "abcdefgh";
+    rfr::Chunk chunk(CHUNK_TAG);
+    chunk.add_parameter(SUBCHUNK_TAG, test_value);
+    cs.add(chunk);
+    
+    cs.close();
+    
+    //retrieve test value
+    rfr::CaptureSession cs_retr("./", filename, false);
+    cs_retr.run_index();
+    rfr::Chunk last_chunk = cs_retr.last();
+    
+    assert(*(last_chunk.get_parameter<std::string>(SUBCHUNK_TAG)) == test_value);
 }
 
 void test_corruption() {
@@ -282,7 +297,9 @@ void test_corruption() {
     
     test_corruption_last_chunk();
 
-    test_corruption_mid_chunk();
+    //test_corruption_mid_chunk();
+    //TODO test_corruption_mid_chunk
+    //some smaller, some larger
 }
 
 //===================================================
