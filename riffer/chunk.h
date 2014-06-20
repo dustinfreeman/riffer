@@ -6,6 +6,8 @@
 #ifndef RFR_CHUNK
 #define RFR_CHUNK
 
+#include <memory> //to get shared_ptr
+
 #include "param.h"
 
 //http://stackoverflow.com/a/8473603/2518451
