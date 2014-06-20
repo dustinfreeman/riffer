@@ -206,6 +206,85 @@ void test_diff_frame_types() {
 	//could do other tests with close timestamps
 }
 
+void test_corruption_load(std::string filename, std::string msg = "") {
+    //testing a file on load, expecting corruption.
+    
+    std::cout << msg << " - expecting to find corruption in capture session: " << filename << "\n";
+    
+    //should catch corruption.
+    rfr::CaptureSession cs("./", filename, false);
+    
+    //Question: should run_index be called from the constructor if we are not overwriting?
+    //  Answer: No. Indexing needs to know by what tags it is indexing by before running.
+    
+    cs.run_index(); //expect corruption to be caught here.
+    
+    
+}
+
+void test_corruption_last_chunk() {
+    std::string filename = "./capture.dat";
+    std::ios_base::openmode mode = std::fstream::binary | std::fstream::in | std::fstream::out | std::fstream::trunc;;
+    
+    std::fstream* capture_file = new std::fstream(filename, mode);
+    
+    //write some frames to file
+    const int SUBCHUNK_SIZE = 7;
+    const int CHUNK_SIZE = SUBCHUNK_SIZE + RIFF_SIZE + RIFF_SIZE;
+    
+    const char* CHUNK_TAG = "CTAG";
+    const char* SUBCHUNK_TAG = "STAG";
+    
+    for (char i = 0; i < 5; i++) {
+        capture_file->write(CHUNK_TAG, RIFF_SIZE); //top-level
+        capture_file->write(reinterpret_cast<const char*>(&CHUNK_SIZE), RIFF_SIZE); //top-level size
+        
+        //subchunk
+        capture_file->write(SUBCHUNK_TAG, RIFF_SIZE);
+        capture_file->write(reinterpret_cast<const char*>(&SUBCHUNK_SIZE), RIFF_SIZE);
+        
+        //write the subchunk data
+        capture_file->write("abcdef", 6);
+        capture_file->write(reinterpret_cast<const char*>(&i), 1);
+        
+    }
+    
+    //write corrupt frame
+    capture_file->write(CHUNK_TAG, RIFF_SIZE); //top-level
+    capture_file->write(reinterpret_cast<const char*>(&CHUNK_SIZE), RIFF_SIZE); //top-level size
+    //subchunk
+    capture_file->write(SUBCHUNK_TAG, RIFF_SIZE);
+    capture_file->write(reinterpret_cast<const char*>(&SUBCHUNK_SIZE), RIFF_SIZE);
+    //smaller subchunk data
+    capture_file->write("abcd", 4);
+    
+    capture_file->close();
+    
+    //test on load
+    test_corruption_load(filename, "test_corruption_last_chunk");
+}
+
+void test_corruption_mid_chunk() {
+    //TODO test_corruption_mid_chunk
+    
+    //some smaller, some larger
+}
+
+void test_corruption() {
+    //intentionally induce corruption, which should be caught on re-load
+    
+    //the policy of riffer, when dealing with the size of a top-level chunk that is incorrect,
+    // is the delete the chunk and pretend it never existed.
+    
+    //in real cases, we expect corrupt chunks as the last chunk in a capture session, due to interrupted writes
+    // BUT THEY COULD BE ANYWHERE
+    // BE EVER WATCHFUL
+    
+    test_corruption_last_chunk();
+
+    test_corruption_mid_chunk();
+}
+
 //===================================================
 int main() {
 	//tag definitions from our local project.
@@ -218,6 +297,8 @@ int main() {
 	test_fetch_frames();
 
 	test_diff_frame_types();
+    
+    test_corruption();
 
 	std::cout << "finished.\n";
 
