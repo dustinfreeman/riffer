@@ -50,6 +50,27 @@ namespace rfr {
 		//we hold indexes for each chunk tag, so that we can apply filters during search
 		std::map<std::string, std::vector<FileIndexPt<int64_t> > > _filtered_index_by_param;
 		
+        
+        std::streamoff _file_end = -1;
+        std::streamoff file_end() {
+            //returns the position of the file to which new frames are written to
+            // in the case of corruption, this may be set to earlier than std::ios_base::end
+            // so that we overwrite these corrupt frames.
+            
+            if (_file_end > 0) {
+                return _file_end;
+            } else {
+                //save current position
+                std::streamoff curr_pos = capture_file->tellg();
+                capture_file->seekg(0, std::ios_base::end);
+                std::streamoff __file_end = capture_file->tellg();
+                //seek back
+                capture_file->seekg(curr_pos, std::ios_base::beg);
+                
+                return __file_end;
+            }
+        }
+        
 		void _add_param(Chunk chunk, std::string param_tag) {
 			//writes the param of the chunk to the file.
 			//helper function for add() below.
@@ -198,7 +219,7 @@ namespace rfr {
 			std::stringstream path;
 			path << folder;
 			path << filename;
-			std::cout << "Opening " << path.str() << "...\n";
+			std::cout << "rfr opening " << path.str() << "...\n";
 			//NOTE: directory must exist initially.
 			capture_file = new std::fstream(path.str(), mode);
 			if (!capture_file->is_open()) {
@@ -237,7 +258,8 @@ namespace rfr {
 			}
 
 			capture_file->seekg(0, std::ios_base::end);
-			std::streamoff file_end = capture_file->tellg();
+			std::streamoff real_file_end = capture_file->tellg();
+            //std::cout << "real_file_end " << real_file_end << "\n";
 
 			//clear current index
 			_chunk_index.clear();
@@ -250,8 +272,11 @@ namespace rfr {
 			while(!capture_file->eof()) {
 				//get chunk start
 				std::streamoff chunk_position = capture_file->tellg(); 
-				if(chunk_position >= file_end)
-					break; //apparently eof doesn't work well enough?
+				if(chunk_position >= real_file_end) {
+                    //the chunk_position is past the end of the file
+                    // I had a note that this was more reliable than eof()
+					break;
+                }
 
 				//chunk tag
 				capture_file->read(buffer.ch_ptr, TAG_SIZE);
@@ -259,6 +284,14 @@ namespace rfr {
 				//chunk length
 				capture_file->read(buffer.ch_ptr, RIFF_SIZE);
 				int chunk_length = buffer.i;
+                
+                //std::cout << chunk_position << " " << chunk_length << "\n";
+                if (chunk_length == 0 || chunk_position + TAG_SIZE + RIFF_SIZE + chunk_length > real_file_end) {
+                    std::cout << "Corrupt chunk detected and dealt with. \n";
+                    //set file end as earlier than expected.
+                    _file_end = chunk_position;
+                    break;
+                }
 				
 				//add to index.
 				_chunk_index.push_back(FileIndexPt<std::string>(chunk_position, tag));
@@ -304,7 +337,9 @@ namespace rfr {
 			if (!capture_file->is_open()) {
 				std::cout << "Capture file not open.\n";
 			}
-			capture_file->seekg(0, std::ios_base::end);
+            
+            capture_file->seekg(file_end(), std::ios_base::beg);
+            
 			std::streamoff chunk_position; 
 			chunk_position = capture_file->tellp();
 			//std::cout << "adding: chunk_position tell p " << chunk_position << "\n";
@@ -347,7 +382,9 @@ namespace rfr {
 			capture_file->write(reinterpret_cast<const char*>(&chunk_size), RIFF_SIZE);
 			//std::cout << _chunk_index.size() << " - " << chunk_position << " chunk_size " << chunk_size << "\n";
 			//go to end again.
+            
 			capture_file->seekg(0, std::ios_base::end);
+            _file_end = -1; //resets our fake file end
 		}
 
 		Chunk get_at(int index) {
