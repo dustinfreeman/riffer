@@ -54,7 +54,7 @@ namespace rfr {
 		std::map<std::string, std::vector<FileIndexPt<int64_t> > > _filtered_index_by_param;
 		
         
-        std::streamoff _file_end = -1;
+        std::streamoff _file_end;
         std::streamoff file_end() {
             //returns the position of the file to which new frames are written to
             // in the case of corruption, this may be set to earlier than std::ios_base::end
@@ -210,6 +210,8 @@ namespace rfr {
 		void init(std::string _folder, std::string _filename, bool overwrite) {
 			folder = _folder;
 			filename = _filename;
+
+			_file_end = -1;
 			
 			std::ios_base::openmode mode = std::fstream::binary | std::fstream::in | std::fstream::out;
 			//mode |= std::fstream::ate; //create
