@@ -38,14 +38,14 @@ namespace rfr {
 		static std::map<std::string, tag_defn> _tags;
 		static std::map<std::string, tag_defn>::iterator _tags_it;
 
-		static void register_tag(std::string _name, std::string _tag, int _type_id) {
-			bool already_registered = false;
+		static bool register_tag(std::string _name, std::string _tag, int _type_id) {
+            //returns true if registration successful, false if not (already registered)
 			//check if name already registered
 			if (_tags.find(_name) != _tags.end()) {
 				if (_tags[_name].tag != _tag) {
 					std::cout << "tag name already registered: " << _name << " as " << _tags[_name].tag << " (tried " << _tag << ")" << "\n";
 				}
-				return;
+				return false;
 			}
 			//check if tag already registered
 			std::map<std::string,tag_defn>::iterator it;
@@ -53,12 +53,14 @@ namespace rfr {
 				//apparently it->second is how to access the key.
 				if (it->second.tag == _tag) {
 					std::cout << "tag already registered: " << _tag << " with name " << it->second.name << " (tried " << _name << ")" << "\n";
-					return;
+					return false;
 				}	
 			}
 
 			//passed registration checks.
 			_tags[_name] = tag_defn(_name, _tag, _type_id);
+            
+            return true; //registration successful
 		}
 
 		static void register_from_file(std::string filename) {
