@@ -23,7 +23,7 @@ namespace rfr {
 		//default constructor for invalid FileIndexPt
 		FileIndexPt() : position(-1), chunk_tag(NULL_TAG)
 		{ }
-		FileIndexPt(std::streamoff _position, T _value, std::string _chunk_tag = "") //, int _type_id)
+		FileIndexPt(std::streamoff _position, T _value, std::string _chunk_tag = NULL_TAG) //, int _type_id)
 			: position(_position), value(_value), chunk_tag(_chunk_tag) //, type_id(_type_id) 
 		{ }
 	};
@@ -407,7 +407,7 @@ namespace rfr {
 		}
 
 		//indexing functions all assume int64_t.
-		FileIndexPt<int64_t> get_index_info_tag(int64_t indexing_value, std::string chunk_filter_tag = "") {
+		FileIndexPt<int64_t> get_index_info_tag(int64_t indexing_value, std::string chunk_filter_tag = NULL_TAG) {
 			//finds the right frame, based on indexing_value
 			
 			const bool verbose_search = false;
@@ -423,7 +423,7 @@ namespace rfr {
 				param_file_index = &_index_by_param; //global index
 			} else {
 				if (_filtered_index_by_param.find(chunk_filter_tag) == _filtered_index_by_param.end()) {
-					std::cout << "We have no chunks with tag " << chunk_filter_tag << " \n";
+					std::cout << "We have no chunks with tag: \"" << chunk_filter_tag << "\" \n";
 					return FileIndexPt<int64_t>();
 				}
 
