@@ -244,6 +244,17 @@ namespace rfr {
 		CaptureSession(std::string _folder = RFR_DEFAULT_FOLDER, std::string _filename = RFR_DEFAULT_FILENAME, bool overwrite = true) {
 			init(_folder, _filename, overwrite);
 		}
+
+		void close() {
+			std::cout << "riffer closing file " << (void*)capture_file << " .\n";
+			capture_file->close();
+		}
+
+		~CaptureSession() {
+			//close();
+			//commented out because we have a few cases - somewhere - where we're using a copy constructor,
+			//	and this can close the file if we let it go out of scope.
+		}
 		
 		void index_by(std::string tag_name) {
 			//informs CaptureSession to index by the given tag.
@@ -513,15 +524,13 @@ namespace rfr {
 			return *chunk;
 		}
 
-		void close() {
-			std::cout << "riffer closing file " << (void*)capture_file << " .\n";
-			capture_file->close();
-		}
+		void copyTo(CaptureSession other_cs, std::string tag_name, int64_t tag_value_min, int64_t tag_value_max) {
+			//copies chunks from this CaptureSession to other_cs, 
+			//	all having tag_name between tag_value_min and tag_value_max inclusive.
+			//does not assume an index has been done already.
 
-		~CaptureSession() {
-			//close();
-			//commented out because we have a few cases - somewhere - where we're using a copy constructor,
-			//	and this can close the file if we let it go out of scope.
+
+
 		}
 	};
 

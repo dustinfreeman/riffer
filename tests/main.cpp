@@ -54,7 +54,7 @@ void test_write_read_frames() {
             image_bytes[4*(x + y*height) + 0] = intensity;
             image_bytes[4*(x + y*height) + 1] = intensity;
             image_bytes[4*(x + y*height) + 2] = intensity;
-            image_bytes[4*(x + y*height) + 3] = 255;
+            image_bytes[4*(x + y*height) + 3] = (char)255;
 		} 	
 	}
 
@@ -152,6 +152,49 @@ void test_fetch_frames() {
 			std::cout << fetch << " " << original << " " << strcmp(fetch, original) << "\n";
 
 		assert( 0 == strcmp_result);
+	}
+}
+
+void test_copy() {
+
+	rfr::tags::register_tag("frame", "FRMM", CHUNK_TYPE);
+
+	rfr::tags::register_tag("number", "NUMM", STRING_TYPE);
+
+	std::vector<std::string> frame_tags;
+	std::vector<int64_t> timestamps;
+	frame_tags.push_back("ZERO");	timestamps.push_back(0);
+	frame_tags.push_back("ONE");	timestamps.push_back(1);
+	frame_tags.push_back("TWO");	timestamps.push_back(2);
+	frame_tags.push_back("THREE");	timestamps.push_back(3);
+	frame_tags.push_back("FOUR");	timestamps.push_back(4);
+	frame_tags.push_back("FIVE");	timestamps.push_back(5);
+	frame_tags.push_back("SIX");	timestamps.push_back(6);
+	frame_tags.push_back("SEVEN");	timestamps.push_back(7);
+	frame_tags.push_back("EIGHT");	timestamps.push_back(8);
+	frame_tags.push_back("NINE");	timestamps.push_back(9);
+	frame_tags.push_back("TEN");	timestamps.push_back(10);
+
+	//create capture
+	rfr::CaptureSession cs_first("./", "first.dat");
+	for (int i = 0; i < frame_tags.size(); i++) {
+		rfr::Chunk chunk("frame");
+		chunk.add_parameter("number", frame_tags[i]);
+		chunk.add_parameter("timestamp", timestamps[i]);
+
+		cs_first.add(chunk);
+	}
+
+	int copy_start = 3;
+	int copy_end = 9;
+
+	rfr::CaptureSession cs_second("./", "second.dat");
+	cs_first.copyTo(cs_second, "timestamp", copy_start, copy_end);
+	
+	assert(cs_second.length() == (copy_end - copy_start + 1));
+
+	for (int i = 0; i < cs_second.length(); i++) {
+		assert(*(cs_second.get_at(i).get_parameter<std::string>("number")) == frame_tags[i + copy_start]);
 	}
 }
 
@@ -312,6 +355,8 @@ int main() {
 	test_write_read_frames();
 
 	test_fetch_frames();
+
+	test_copy();
 
 	test_diff_frame_types();
     
