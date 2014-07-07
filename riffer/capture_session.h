@@ -237,6 +237,10 @@ namespace rfr {
 			return folder;
 		}
 
+		std::string get_filename() {
+			return filename;
+		}
+
 		CaptureSession(std::string _folder = RFR_DEFAULT_FOLDER, std::string _filename = RFR_DEFAULT_FILENAME, bool overwrite = true) {
 			init(_folder, _filename, overwrite);
 		}
