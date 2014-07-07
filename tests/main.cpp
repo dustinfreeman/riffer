@@ -189,12 +189,15 @@ void test_copy() {
 	int copy_end = 9;
 
 	rfr::CaptureSession cs_second("./", "second.dat");
-	cs_first.copyTo(cs_second, "timestamp", copy_start, copy_end);
+	cs_first.copyTo(&cs_second, "timestamp", copy_start, copy_end);
 	
 	assert(cs_second.length() == (copy_end - copy_start + 1));
 
 	for (int i = 0; i < cs_second.length(); i++) {
-		assert(*(cs_second.get_at(i).get_parameter<std::string>("number")) == frame_tags[i + copy_start]);
+		std::string first_num = *(cs_second.get_at(i).get_parameter<std::string>("number"));
+		std::string second_num = frame_tags[i + copy_start];
+
+		assert(first_num == second_num);
 	}
 }
 

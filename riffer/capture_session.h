@@ -524,13 +524,23 @@ namespace rfr {
 			return *chunk;
 		}
 
-		void copyTo(CaptureSession other_cs, std::string tag_name, int64_t tag_value_min, int64_t tag_value_max) {
+		void copyTo(CaptureSession *other_cs, std::string tag_name, int64_t tag_value_min, int64_t tag_value_max) {
 			//copies chunks from this CaptureSession to other_cs, 
 			//	all having tag_name between tag_value_min and tag_value_max inclusive.
 			//does not assume an index has been done already.
 
+			index_by(tag_name);
+			run_index();
 
+			//_index_by_param now holds an index by tag_name;
 
+			for (int i = 0; i < _index_by_param.size(); i++) {
+				if (tag_value_min <= _index_by_param[i].value 
+					&& _index_by_param[i].value <= tag_value_max) {
+					Chunk chunk = _read_chunk_at_file_pos(_index_by_param[i].position);
+					other_cs->add(chunk);
+				}
+			}
 		}
 	};
 
