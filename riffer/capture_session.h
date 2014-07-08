@@ -246,7 +246,7 @@ namespace rfr {
 		}
 
 		void close() {
-			std::cout << "riffer closing file " << (void*)capture_file << " .\n";
+			std::cout << "riffer closing file " << get_filename() << " " << (void*)capture_file << " .\n";
 			capture_file->close();
 		}
 
