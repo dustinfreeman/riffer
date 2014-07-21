@@ -503,7 +503,6 @@ namespace rfr {
 		}
 
 		void get_by_index_tag(Chunk* chunk, int64_t indexing_value, std::string chunk_filter_tag = NULL_TAG) {
-			
 			FileIndexPt<int64_t> index_pt = get_index_info_tag(indexing_value, chunk_filter_tag);
 			_read_chunk_at_file_pos(chunk, index_pt.position);
 		}
