@@ -218,6 +218,10 @@ namespace rfr {
 			if (overwrite)
 				mode |= std::fstream::trunc; //discard file contents
 			
+			//can pass filename as "" to prevent opening.
+			if (filename.size() == 0)
+				return;
+
 			std::stringstream path;
 			path << folder;
 			path << filename;
@@ -527,6 +531,9 @@ namespace rfr {
 			//copies chunks from this CaptureSession to other_cs, 
 			//	all having tag_name between tag_value_min and tag_value_max inclusive.
 			//does not assume an index has been done already.
+
+			if (this->filename.size() == 0 && other_cs->filename.size() == 0)
+				return; //nothing to copy! Perfect success!
 
 			index_by(tag_name);
 			run_index();
