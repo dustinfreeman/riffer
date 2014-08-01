@@ -220,8 +220,10 @@ namespace rfr {
 				mode |= std::fstream::app;
 
 			//can pass filename as "" to prevent opening.
-			if (filename.size() == 0)
+			if (filename.size() == 0) {
+				capture_file = nullptr;
 				return;
+			}
 
 			std::stringstream path;
 			path << folder;
@@ -274,6 +276,10 @@ namespace rfr {
 		void run_index() {
 			//clears and re-does any indexing by tags it is supposed to index.
 			//will take some time for larger files.
+			
+			if (!capture_file)
+				return;
+			
 			if (!capture_file->is_open()) {
 				std::cout << "Cannot index. Capture file is not open!\n";
 				return;
