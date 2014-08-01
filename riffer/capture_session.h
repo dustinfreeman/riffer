@@ -102,7 +102,7 @@ namespace rfr {
 					break;
 				default:
                     data = nullptr;
-					std::cout << "Unknown data type!\n";
+					std::cout << "rfr: Unknown data type!\n";
 					break;
 			}
 			capture_file->write(data, data_length);
@@ -214,10 +214,11 @@ namespace rfr {
 			_file_end = -1;
 			
 			std::ios_base::openmode mode = std::fstream::binary | std::fstream::in | std::fstream::out;
-			//mode |= std::fstream::ate; //create
 			if (overwrite)
 				mode |= std::fstream::trunc; //discard file contents
-			
+			else 
+				mode |= std::fstream::app;
+
 			//can pass filename as "" to prevent opening.
 			if (filename.size() == 0)
 				return;
