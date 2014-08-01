@@ -28,6 +28,18 @@ namespace rfr {
 			tag = tags::get_tag(_tag_name);
 		}
 
+		//copy constructor
+		//Chunk(const Chunk &other) {
+		//	this->tag = other.tag;
+
+		//	std::map<std::string, std::shared_ptr<AbstractParam> >::const_iterator params_it = other.params.begin();
+		//	while (params_it != other.params.end()) {
+		//		const std::string sub_tag = params_it->first;
+		//		params[sub_tag] = other.params.at(sub_tag);
+		//		params_it++;
+		//	}
+		//}
+
 		~Chunk() {
 			//delete each parameter
 			params.clear();
