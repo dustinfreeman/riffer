@@ -216,8 +216,6 @@ namespace rfr {
 			std::ios_base::openmode mode = std::fstream::binary | std::fstream::in | std::fstream::out;
 			if (overwrite)
 				mode |= std::fstream::trunc; //discard file contents
-			else 
-				mode |= std::fstream::app;
 
 			//can pass filename as "" to prevent opening.
 			if (filename.size() == 0) {
@@ -315,7 +313,7 @@ namespace rfr {
                 
                 //std::cout << chunk_position << " " << chunk_length << "\n";
                 if (chunk_length == 0 || chunk_position + TAG_SIZE + RIFF_SIZE + chunk_length > real_file_end) {
-                    std::cout << "\t corrupt chunk detected and dealt with. \n";
+                    std::cout << "\t eof corrupt chunk detected and dealt with. \n";
                     //set file end as earlier than expected.
                     _file_end = chunk_position;
                     break;
