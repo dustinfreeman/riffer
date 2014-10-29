@@ -545,7 +545,7 @@ namespace rfr {
 
 			//_index_by_param now holds an index by tag_name;
 
-			for (int i = 0; i < _index_by_param.size(); i++) {
+			for (unsigned int i = 0; i < _index_by_param.size(); i++) {
 				if (tag_value_min <= _index_by_param[i].value 
 					&& _index_by_param[i].value <= tag_value_max) {
 					Chunk chunk = _read_chunk_at_file_pos(_index_by_param[i].position);
