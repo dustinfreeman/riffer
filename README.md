@@ -17,18 +17,18 @@ Test code is included that demonstrates basic use. Adding to and reading from Ch
     cs.close();
 
 
-This is like the 4th time I have re-written this code from the ground up, and so I decided to make it open-source. Previous versions have all been written in C#, so some vestigial C# idioms may appear that I'm trying to weed out. This code was inspired by needs in two real-time streaming data projects:
+This is like the 4th time I have re-written this code from the ground up, and so I decided to make it open-source. Previous versions have all been written in C#, so some vestigial C# idioms may appear that I'm trying to weed out. This code was inspired by needs in several real-time streaming data projects:
 
 LACES, a touch-based video editor presented at CHI 2014. Video demo here: https://www.youtube.com/watch?v=9zG--3M2DMs
 
 Background Activity, a depth and colour dataset of natural user behaviour in a living room environment. Info here: http://www.dgp.toronto.edu/~dustin/backgroundactivity/
 
+Improv Remix, a gestural performance tool for theatre performers to do live video editing of stage environments. Video here: https://www.youtube.com/edit?o=U&video_id=Kef7NNRmVb0
 
-Riffer is referenced in two other projects of mine:
+
+Riffer is a currently a dependency in two other public projects:
 
 https://github.com/dustinfreeman/kriffer, which stores Windows Kinect SDK data in riffer
-
-AND
 
 https://github.com/dustinfreeman/nfig, which uses a ```rfr::Chunk``` object as a set of configurations for an application. nfig serializes in the JSON format. 
 
